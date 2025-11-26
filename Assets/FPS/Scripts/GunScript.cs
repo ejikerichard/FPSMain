@@ -172,7 +172,7 @@ private int damage; //Damage dealt by a weapon
 	 */
 	void CrossHairExpansionWhenWalking(){
 
-		if(player.GetComponent<Rigidbody>().velocity.magnitude > 1 && Input.GetAxis("Fire1") == 0){//ifnot shooting
+		if(player.GetComponent<Rigidbody>().linearVelocity.magnitude > 1 && Input.GetAxis("Fire1") == 0){//ifnot shooting
 
 			expandValues_crosshair += new Vector2(20, 40) * Time.deltaTime;
 			if(player.GetComponent<PlayerMovementScript>().maxSpeed < runningSpeed){ //not running

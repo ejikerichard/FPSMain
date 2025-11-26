@@ -38,6 +38,7 @@ namespace FPS
 
         void FixedUpdate(){
             playerController.HandleMovement(onFootActions.Movement.ReadValue<Vector2>());
+            playerController.HandleAnimate(onFootActions.Movement.ReadValue<Vector2>());
         }
         private void LateUpdate(){
             mouseLook.ProcessLook(onFootActions.Look.ReadValue<Vector2>());

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
 using Unity.VisualScripting;
@@ -11,6 +11,11 @@ namespace FPS
     [RequireComponent(typeof(CapsuleCollider))]
     public class PlayerController : MonoBehaviour
     {
+
+        [Header("Animation")]
+        public Animator anim;
+        public float animationSmoothing = 8f;
+
         [Header("References")]
         public Camera playerCamera;
         public Transform orientation; // optional, use camera.forward-based movement
@@ -26,6 +31,7 @@ namespace FPS
         public float deceleration = 20f;
         public float airControl = 0.5f;
         public float targetSpeed;
+        public float speedPercent;
 
         [Header("Jump & Gravity")]
         public float jumpForce = 7f;
@@ -132,6 +138,34 @@ namespace FPS
                 float h = Mathf.Lerp(capsuleCollider.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
                 AdjustCharacterHeight(h);
             }
+        }
+        public void HandleAnimate(Vector2 moveInput){
+            Vector2 dir = new Vector2(moveInput.x, moveInput.y);
+            float moveAmount = Mathf.Clamp01(dir.magnitude);
+
+            // ----------- 3 ZONE ANALOG LOCOMOTION ------------
+            float targetSpeed = 0f;
+
+            if(moveAmount < 0.1f){
+                targetSpeed = 0f;  // IDLE
+            }
+            else if(moveAmount < 0.35f){
+                targetSpeed = 0.5f;  // WALK
+            }
+            else if(moveAmount < 0.75f){
+                targetSpeed = 0.85f; // JOG
+            }
+            else{
+                targetSpeed = 1.2f;  // RUN
+            }
+
+            // Smooth movement blending
+            anim.SetFloat("Speed", targetSpeed, 0.1f, Time.deltaTime);
+
+            // Optional: feed joystick strength into a secondary parameter
+            anim.SetFloat("WalkBlend", moveAmount, 0.1f, Time.deltaTime);
+
+            Debug.Log($"MoveAmount={moveAmount}, Speed={targetSpeed}");
 
         }
         void HandleJump(){
@@ -141,19 +175,21 @@ namespace FPS
                 if(Time.time - lastJumpRequestTime <= jumpBufferTime && Time.time - lastGroundTime <= coyoteTime){
                     verticalVelocity = jumpForce;
                     Vector3 verticalMove = new Vector3(0, verticalVelocity, 0);
-                    myBody.velocity = verticalMove;
+                    myBody.linearVelocity = verticalMove;
                     lastJumpRequestTime = -10f;
                 }
             }else{
                 bool falling = verticalVelocity < 0f;
                 verticalVelocity += gravity * (falling ? fallGravityMultiplier : 1f) * Time.deltaTime;
                 Vector3 verticalMove = new Vector3(0, verticalVelocity, 0);
-                myBody.velocity = verticalMove;
+                myBody.linearVelocity = verticalMove;
             }
+
+            anim.SetBool("IsGrounded", IsGrounded());
         }
         void HandleCameraBob(){
             if (!IsGrounded()) return;
-            float speed = new Vector3(myBody.velocity.x, 0, myBody.velocity.z).magnitude;
+            float speed = new Vector3(myBody.linearVelocity.x, 0, myBody.linearVelocity.z).magnitude;
             if(speed > 0.1f){
                 bobTimer += Time.deltaTime * (speed / walkSpeed) * headBobFrequency;
                 float bobAmount = headBobAmount * (isCrouching ? 0.5f : 1f) * (sprintPressed ? 1.3f : 1f);
@@ -166,7 +202,7 @@ namespace FPS
             }
         }
 
-        public void OnJumpPressed() { jumpRequested = true; lastJumpRequestTime = Time.time; }
+        public void OnJumpPressed() { jumpRequested = true; anim.CrossFadeInFixedTime("JumpStart", 0.1f); lastJumpRequestTime = Time.time; }
         public void OnSprintPressed() { if (moveInput.sqrMagnitude < 0.1f) return; sprintPressed = true; Debug.Log("Sprint button pressed"); }
         public void OnSprintReleased() { sprintPressed = false; Debug.Log("Sprint button released"); }
         public void OnCrouchPressed() { crouchPressed = true; isCrouching = true; Debug.Log("CrouchButton pressed"); }
@@ -191,7 +227,7 @@ namespace FPS
             }
 
             // start slide if sprint + crouch pressed and speed > threshold
-            if (crouchPressed && sprintPressed && !isSliding && myBody.velocity.magnitude > slideThresholdSpeed && IsGrounded() && currentStamina > 0)
+            if (crouchPressed && sprintPressed && !isSliding && myBody.linearVelocity.magnitude > slideThresholdSpeed && IsGrounded() && currentStamina > 0)
                 StartCoroutine(StartSlide());
         }
         IEnumerator StartSlide(){
@@ -243,8 +279,8 @@ namespace FPS
         }
         void HandleFootsteps(){
             if (!IsGrounded()) return;
-            float speed = new Vector3(myBody.velocity.x, 0, myBody.velocity.z).magnitude;
-            if(speed > 0.5f && myBody.velocity.magnitude > 0.1f){
+            float speed = new Vector3(myBody.linearVelocity.x, 0, myBody.linearVelocity.z).magnitude;
+            if(speed > 0.5f && myBody.linearVelocity.magnitude > 0.1f){
                 // simple timer-based footsteps
                 float rate = 0.45f;
                 if (sprintPressed) rate = 0.25f;
