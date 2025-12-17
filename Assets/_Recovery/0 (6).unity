@@ -832,10 +832,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 129
   controller: {fileID: 0}
-  range: 10
+  range: 15
   isAttacking: 0
   attackCount: 0
-  timeBetweenAttacks: 0.5
+  timeBetweenAttacks: 1
   attackTimer: 0
   attackID_Params: AttackID
   noHit_Params: NoHit_ID

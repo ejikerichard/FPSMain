@@ -25,6 +25,9 @@ namespace FPS
             onFootActions.Crouch.performed += ctx => playerController.OnCrouchPressed();
             onFootActions.Crouch.canceled += ctx => playerController.OnCrouchReleased();
 
+            onFootActions.Attack.performed += ctx => playerController.OnAttackPressed();
+            onFootActions.Attack.canceled += ctx => playerController.OnAttackReleased();
+
         }
         private void Start(){
             playerController = GetComponent<PlayerController>();

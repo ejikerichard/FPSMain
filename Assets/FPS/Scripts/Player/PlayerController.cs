@@ -21,7 +21,7 @@ namespace FPS
         public Transform orientation; // optional, use camera.forward-based movement
         public PlayerInput playerInput; // assign your InputAction asset (or added automatically)
         public AudioSource footstepSource;
-        public AudioClip[] footstepClips;
+        public AudioClip footstepClips;
 
         [Header("Movement")]
         public float walkSpeed = 5f;
@@ -93,6 +93,7 @@ namespace FPS
         bool crouchPressed;
         bool isCrouching;
         bool isSliding;
+        public bool attackPressed;
         float slideTimer;
         float currentStamina;
         float staminaRecoverTimer;
@@ -207,6 +208,8 @@ namespace FPS
         public void OnSprintReleased() { sprintPressed = false; Debug.Log("Sprint button released"); }
         public void OnCrouchPressed() { crouchPressed = true; isCrouching = true; Debug.Log("CrouchButton pressed"); }
         public void OnCrouchReleased() { crouchPressed = false; isCrouching = false; Debug.Log("CrouchButton releassed"); }
+        public void OnAttackPressed() { attackPressed = true; Debug.Log("Attack Pressed"); }
+        public void OnAttackReleased() { attackPressed =false; Debug.Log("Attack Released"); }
         void HandleTimers(){
             if (IsGrounded())
                 lastGroundTime = Time.time;
@@ -277,23 +280,28 @@ namespace FPS
             }
             capsuleCollider.enabled = true;
         }
-        void HandleFootsteps(){
+        public void HandleFootsteps(){
             if (!IsGrounded()) return;
-            float speed = new Vector3(myBody.linearVelocity.x, 0, myBody.linearVelocity.z).magnitude;
-            if(speed > 0.5f && myBody.linearVelocity.magnitude > 0.1f){
-                // simple timer-based footsteps
-                float rate = 0.45f;
-                if (sprintPressed) rate = 0.25f;
-                if (isCrouching) rate = 0.6f;
-                // use bobTimer to schedule footsteps
-                if(Mathf.Repeat(bobTimer, rate) < Time.deltaTime * 2f && !footstepSource.isPlaying){
-                    PlayFootstep();
-                }
-            }
+           
+            PlayFootstep();
+              //  PlayFootstep();
+            //float speed = new Vector3(myBody.linearVelocity.x, 0, myBody.linearVelocity.z).magnitude;
+            //Debug.Log($"Footstep Speed: {(myBody.linearVelocity.magnitude )}");
+            //if (myBody.linearVelocity.magnitude > 0){
+            //    // simple timer-based footsteps
+            //    float rate = 0.45f;
+            //    Debug.Log($"Speed: {(speed)}");
+            //    if (sprintPressed) rate = 0.25f;
+            //    if (isCrouching) rate = 0.6f;
+            //    // use bobTimer to schedule footsteps
+            //    if(Mathf.Repeat(bobTimer, rate) < Time.deltaTime * 2f && !footstepSource.isPlaying){
+            //        PlayFootstep();
+            //    }
+            //}
         }
         void PlayFootstep(){
-            if (footstepClips == null || footstepClips.Length == 0 || footstepSource == null) return;
-            var clip = footstepClips[Random.Range(0, footstepClips.Length)];
+            if (footstepClips == null || footstepSource == null) return;
+            var clip = footstepClips;
             footstepSource.PlayOneShot(clip);
         }
         void HandleRecoilReturn(){

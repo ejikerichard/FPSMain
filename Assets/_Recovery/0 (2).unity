@@ -585,7 +585,6 @@ GameObject:
   - component: {fileID: 281204829}
   - component: {fileID: 281204830}
   - component: {fileID: 281204828}
-  - component: {fileID: 281204831}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -788,7 +787,6 @@ MonoBehaviour:
   myBody: {fileID: 0}
   capsuleCollider: {fileID: 0}
   jumpRequested: 0
-  attackPressed: 0
   lastYVel: 0
 --- !u!114 &281204830
 MonoBehaviour:
@@ -815,31 +813,7 @@ MonoBehaviour:
   clipMask:
     serializedVersion: 2
     m_Bits: 55
---- !u!114 &281204831
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 281204822}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f7ee238299cff542a5fd431f23953db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerAttack
-  armCam: {fileID: 0}
-  hitLayers:
-    serializedVersion: 2
-    m_Bits: 129
-  controller: {fileID: 0}
-  range: 10
-  isAttacking: 0
-  attackCount: 0
-  timeBetweenAttacks: 0.5
-  attackTimer: 0
-  attackID_Params: AttackID
-  noHit_Params: NoHit_ID
-  isAttack_Params: IsAttacking
+  crosshair: {fileID: 910442640}
 --- !u!1 &373519321
 GameObject:
   m_ObjectHideFlags: 0
@@ -1238,7 +1212,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 50, y: 50}
+  m_SizeDelta: {x: 100, y: 512}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &910442642
 MonoBehaviour:
@@ -1291,7 +1265,7 @@ GameObject:
   - component: {fileID: 923430515}
   m_Layer: 0
   m_Name: ArmCamera
-  m_TagString: ArmCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -27,6 +27,7 @@ namespace FPS
         private float currentDistance;
         private int playerLayer;
 
+
         void Start(){
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -38,6 +39,10 @@ namespace FPS
                 playerLayer = playerRoot.gameObject.layer;
             else
                 playerLayer = gameObject.layer; // fallback
+        }
+        private void Update()
+        {
+         
         }
 
         public void ProcessLook(Vector2 input){
