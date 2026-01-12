@@ -1,107 +1,96 @@
-using UnityEngine;
-using System.Collections.Generic;
-using System.Collections;
-using System;
+﻿using UnityEngine;
 
 namespace FPS
 {
     public class PlayerAttack : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] Camera armCam;
-        [SerializeField] LayerMask hitLayers;
-        [SerializeField] PlayerController controller;
-        [SerializeField] float range = 100f;
+        [SerializeField] private Camera armCam;
+        [SerializeField] private LayerMask hitLayers;
+        [SerializeField] private PlayerController controller;
 
-        [Header("AttackSettings")]
-        [SerializeField] bool isAttacking = false;
-        [SerializeField] int attackCount = 0;
-        [SerializeField] float timeBetweenAttacks = 0.5f;
-        [SerializeField] float attackTimer = 0f;
+        [Header("Attack Settings")]
+        [SerializeField] private float range = 100f;
+        [SerializeField] private float timeBetweenAttacks = 0.5f;
+        [SerializeField] private int maxCombo = 2;
 
-        [Header("AnimationPrematers")]
-        [SerializeField] string attackID_Params = "AttackID";
-        [SerializeField] string noHit_Params = "NoHit_ID";
-        [SerializeField] string isAttack_Params = "IsAttacking";
+        [Header("Weapon")]
+        [SerializeField] WeaponData weaponData;
 
+        [Header("Animator Parameters")]
+        [SerializeField] private string attackIDParam = "AttackID";
+        [SerializeField] private string noHitParam = "NoHit_ID";
+        [SerializeField] private string isAttackParam = "IsAttacking";
 
-        void Start(){
-            controller = GetComponent<PlayerController>();
-            armCam = GameObject.FindGameObjectWithTag("ArmCamera").GetComponent<Camera>();
+        private int attackIndex = 0;
+        private float attackCooldown;
+        private bool isAttacking;
+
+        void Awake(){
+            if (!controller)
+                controller = GetComponent<PlayerController>();
+
+            if (!armCam)
+                armCam = GameObject.FindGameObjectWithTag("MainCamera")?.GetComponent<Camera>();
         }
 
         void Update(){
-            FirRay();
+            attackCooldown -= Time.deltaTime;
 
-            if (attackTimer > 0)
-                attackTimer -= Time.deltaTime;
+            if (controller.attackPressed)
+                TryAttack();
+
+            HandleAttackReset();
         }
 
-        void FirRay(){
-            RaycastHit hit;
-            if(Physics.Raycast(armCam.transform.position, armCam.transform.forward, out hit, range, hitLayers)){
-                if(controller.attackPressed){
-                    if(attackTimer <= 0){
-                        if(attackCount <= 0 && !isAttacking){
-                            attackCount += 1;
-                            isAttacking = true;
-                            controller.anim.SetInteger(attackID_Params, attackCount);
-                            controller.anim.SetBool(isAttack_Params, isAttacking);
-                        }
-                        
-                        else if(attackCount == 1 && !isAttacking){
-                            attackCount += 1;
-                            isAttacking = true;
-                            controller.anim.SetInteger(attackID_Params, attackCount);
-                            controller.anim.SetBool(isAttack_Params, isAttacking);
-                        }
-                        
-                        if(attackCount == 2 && !isAttacking){
-                            attackCount += 1;
-                            isAttacking = true;
-                            controller.anim.SetInteger(attackID_Params, attackCount);
-                            controller.anim.SetBool(isAttack_Params, isAttacking);
-                        }
-                            attackTimer = timeBetweenAttacks;
-                    }
-                }
-                Debug.Log(hit.transform.name);
+        void TryAttack(){
+            if (attackCooldown > 0f || isAttacking)
+                return;
+
+            bool hit = PerformRaycast();
+
+            attackIndex++;
+            if (attackIndex > maxCombo)
+                attackIndex = 1;
+
+            isAttacking = true;
+            attackCooldown = timeBetweenAttacks;
+
+            controller.anim.SetBool(isAttackParam, true);
+
+            if (hit){
+                Debug.Log("Hit");
+                controller.anim.SetInteger(attackIDParam, attackIndex);
             }
             else
-            {
-                if(controller.attackPressed){
-                    if(attackTimer <= 0){
-                        if(attackCount <= 0 && !isAttacking){
-                            attackCount += 1;
-                            isAttacking = true;
-                            controller.anim.SetInteger(attackID_Params, attackCount);
-                            controller.anim.SetBool(isAttack_Params, isAttacking);
-                        }
-                        
-                        else if(attackCount == 1 && !isAttacking){
-                            attackCount += 1;
-                            isAttacking = true;
-                            controller.anim.SetInteger(attackID_Params, attackCount);
-                            controller.anim.SetBool(isAttack_Params, isAttacking);
-                        }
-                        if(attackCount == 2 && !isAttacking){
-                            attackCount += 1;
-                            isAttacking = true;
-                            controller.anim.SetInteger(attackID_Params, attackCount);
-                            controller.anim.SetBool(isAttack_Params, isAttacking);
-                        }
-
-                        attackTimer = timeBetweenAttacks;
-                    }
-                }
-            }
+                controller.anim.SetInteger(noHitParam, attackIndex);
         }
-        public void HandleResetAttack(){
+
+        bool PerformRaycast(){
+            Vector3 rayOrigin = armCam.transform.position;
+            RaycastHit hit;
+            return Physics.Raycast(rayOrigin, armCam.transform.forward, out hit, range, hitLayers);
+        }
+
+        void HandleAttackReset(){
+            if (!isAttacking)
+                return;
+
+            if (controller.stateInfo.normalizedTime < 1f)
+                return;
+
+            if (!controller.IsAnimatorTag("AttackHit") &&
+                !controller.IsAnimatorTag("AttackNoHit"))
+                return;
+
             isAttacking = false;
-            if(attackCount >=3)
-                { attackCount = 0; }
-            controller.anim.SetBool(isAttack_Params, isAttacking);
+            controller.anim.SetBool(isAttackParam, false);
+
+            if(attackIndex >= maxCombo){
+                attackIndex = 0;
+                controller.anim.SetInteger(attackIDParam, 0);
+                controller.anim.SetInteger(noHitParam, 0);
+            }
         }
     }
 }
-

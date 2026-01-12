@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using JetBrains.Annotations;
+using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
 using Unity.VisualScripting;
@@ -103,7 +104,11 @@ namespace FPS
         float bobTimer;
         Vector3 recoilOffset;
 
-        //Vector3 playerVelocity;
+
+       public AnimatorStateInfo stateInfo;
+
+       public int baseLayer { get { return anim.GetLayerIndex("Base Layer"); } }
+
         void Start(){
             myBody = GetComponent<Rigidbody>();
             capsuleCollider = GetComponent<CapsuleCollider>();
@@ -114,6 +119,7 @@ namespace FPS
             HandleJump();
             HandleVaultCheck();
             HandleCameraBob();
+            LayerControl();
         }
 
         public void HandleMovement(Vector2 input){
@@ -166,7 +172,7 @@ namespace FPS
             // Optional: feed joystick strength into a secondary parameter
             anim.SetFloat("WalkBlend", moveAmount, 0.1f, Time.deltaTime);
 
-            Debug.Log($"MoveAmount={moveAmount}, Speed={targetSpeed}");
+            //Debug.Log($"MoveAmount={moveAmount}, Speed={targetSpeed}");
 
         }
         void HandleJump(){
@@ -232,6 +238,18 @@ namespace FPS
             // start slide if sprint + crouch pressed and speed > threshold
             if (crouchPressed && sprintPressed && !isSliding && myBody.linearVelocity.magnitude > slideThresholdSpeed && IsGrounded() && currentStamina > 0)
                 StartCoroutine(StartSlide());
+        }
+
+        void LayerControl(){
+            stateInfo = anim.GetCurrentAnimatorStateInfo(baseLayer);
+        }
+        public bool IsAnimatorTag(string tag){
+
+            if(anim == null) return false;
+            if(stateInfo.IsTag(tag)) return true;
+
+            return false;
+           
         }
         IEnumerator StartSlide(){
             isSliding = true;
@@ -347,7 +365,7 @@ namespace FPS
                 if(lastYVel < -fallDamageMinHeight){
                     float damage = (Mathf.Abs(lastYVel) - fallDamageMinHeight) * fallDamageMultiplier;
                     // apply damage to player here
-                    Debug.Log($"Fall damage: {damage}");
+                  //  Debug.Log($"Fall damage: {damage}");
                 }
                 lastYVel = 0;
             }

@@ -23,6 +23,7 @@ namespace FPS
         public float cameraAdjustSpeed = 10f;    // How smoothly camera adjusts
         public LayerMask clipMask;               // Layers that block the camera
 
+
         private float xRotation = 0f;
         private float currentDistance;
         private int playerLayer;
@@ -61,7 +62,7 @@ namespace FPS
         }
 
         void HandleCameraClipping(){
-            if(cameraPivot == null || cam == null)
+            if (cameraPivot == null || cam == null)
                 return;
 
             Vector3 pivotPos = cameraPivot.position;
@@ -75,8 +76,7 @@ namespace FPS
                 // Ignore collisions with player or its children (hands, arms, weapon, etc.)
                 if(hit.collider.transform.root.gameObject.layer == playerLayer){
                     // Do nothing, ignore player collisions
-                }
-                else{
+                }else{
                     float targetDist = hit.distance - 0.05f;
                     currentDistance = Mathf.Lerp(currentDistance, Mathf.Max(0.05f, targetDist), Time.deltaTime * cameraAdjustSpeed);
                 }

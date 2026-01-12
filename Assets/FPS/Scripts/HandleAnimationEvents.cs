@@ -17,7 +17,7 @@ namespace FPS
             player.GetComponent<PlayerController>().HandleFootsteps();
         }
         public void ResetAttack(){
-            player.GetComponent<PlayerAttack>().HandleResetAttack();
+            //player.GetComponent<PlayerAttack>().HandleResetAttack();
         }
     }
 }
