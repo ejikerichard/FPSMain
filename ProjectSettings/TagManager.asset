@@ -8,6 +8,8 @@ TagManager:
   - SecondCamera
   - BulletSpawn
   - ArmCamera
+  - Weapon
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -17,7 +19,7 @@ TagManager:
   - UI
   - Arm
   - Enemies
-  - WeaponOnly
+  - Walls
   - 
   - 
   - 

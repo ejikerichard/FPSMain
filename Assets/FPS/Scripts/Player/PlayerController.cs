@@ -40,6 +40,8 @@ namespace FPS
         public float fallGravityMultiplier = 2.5f; // stronger gravity when falling
         public float coyoteTime = 0.12f;
         public float jumpBufferTime = 0.12f;
+        public float jumpForwardBoost = 3.5f;
+        public float sprintJumpMultiplier = 1.25f;
 
         [Header("Crouch & Slide")]
         public float standingHeight = 1.8f;
@@ -91,8 +93,8 @@ namespace FPS
 
         // states
         bool sprintPressed;
-        bool crouchPressed;
-        bool isCrouching;
+        public bool crouchPressed;
+        public bool isCrouching;
         bool isSliding;
         public bool attackPressed;
         float slideTimer;
@@ -121,6 +123,10 @@ namespace FPS
             HandleCameraBob();
             LayerControl();
         }
+        private void FixedUpdate()
+        {
+            HandleCrouch();
+        }
 
         public void HandleMovement(Vector2 input){
             moveInput = input;
@@ -140,8 +146,12 @@ namespace FPS
             Vector3 move = velocity * Time.deltaTime;
             myBody.MovePosition(transform.position + move);
 
+        }
+        void HandleCrouch(){
+
             float targetHeight = isCrouching ? crouchHeight : standingHeight;
-            if(Mathf.Abs(capsuleCollider.height - targetHeight) > 0.01f){
+            if (Mathf.Abs(capsuleCollider.height - targetHeight) > 0.01f)
+            {
                 float h = Mathf.Lerp(capsuleCollider.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
                 AdjustCharacterHeight(h);
             }
@@ -175,25 +185,65 @@ namespace FPS
             //Debug.Log($"MoveAmount={moveAmount}, Speed={targetSpeed}");
 
         }
-        void HandleJump(){
-            if(IsGrounded()){
-                verticalVelocity = (verticalVelocity < 0f) ? -2f : verticalVelocity; // small grounded stick
-                                                                                     // jump buffering + coyote time
-                if(Time.time - lastJumpRequestTime <= jumpBufferTime && Time.time - lastGroundTime <= coyoteTime){
+        void HandleJump()
+        {
+            if(isCrouching) return;
+
+
+            if (IsGrounded()){
+                verticalVelocity = (verticalVelocity < 0f) ? -2f : verticalVelocity;
+
+                if(Time.time - lastJumpRequestTime <= jumpBufferTime &&
+                    Time.time - lastGroundTime <= coyoteTime){
+                    // --- Vertical jump ---
                     verticalVelocity = jumpForce;
-                    Vector3 verticalMove = new Vector3(0, verticalVelocity, 0);
-                    myBody.linearVelocity = verticalMove;
+
+                    // --- Horizontal jump boost ---
+                    Vector3 forward = GetOrientationForward();
+                    Vector3 right = GetOrientationRight();
+
+                    Vector3 inputDir =
+                        (forward * moveInput.y + right * moveInput.x).normalized;
+
+                    Vector3 horizontalVelocity = new Vector3(
+                        myBody.linearVelocity.x,
+                        0f,
+                        myBody.linearVelocity.z
+                    );
+
+                    float boost =
+                        jumpForwardBoost *
+                        Mathf.Clamp01(moveInput.magnitude) *
+                        (sprintPressed ? sprintJumpMultiplier : 1f);
+
+                    horizontalVelocity += inputDir * boost;
+
+                    myBody.linearVelocity =
+                        horizontalVelocity + Vector3.up * verticalVelocity;
+
                     lastJumpRequestTime = -10f;
                 }
             }else{
                 bool falling = verticalVelocity < 0f;
-                verticalVelocity += gravity * (falling ? fallGravityMultiplier : 1f) * Time.deltaTime;
-                Vector3 verticalMove = new Vector3(0, verticalVelocity, 0);
-                myBody.linearVelocity = verticalMove;
+                verticalVelocity += gravity *
+                    (falling ? fallGravityMultiplier : 1f) *
+                    Time.deltaTime;
+
+                // Preserve forward speed in air
+                Vector3 horizontalVelocity = new Vector3(
+                    myBody.linearVelocity.x,
+                    0f,
+                    myBody.linearVelocity.z
+                );
+
+                myBody.linearVelocity =
+                    horizontalVelocity + Vector3.up * verticalVelocity;
             }
 
             anim.SetBool("IsGrounded", IsGrounded());
         }
+
+
         void HandleCameraBob(){
             if (!IsGrounded()) return;
             float speed = new Vector3(myBody.linearVelocity.x, 0, myBody.linearVelocity.z).magnitude;
@@ -209,11 +259,11 @@ namespace FPS
             }
         }
 
-        public void OnJumpPressed() { jumpRequested = true; anim.CrossFadeInFixedTime("JumpStart", 0.1f); lastJumpRequestTime = Time.time; }
+        public void OnJumpPressed() { jumpRequested = true; /*anim.CrossFadeInFixedTime("JumpStart", 0.1f); lastJumpRequestTime = Time.time; */}
         public void OnSprintPressed() { if (moveInput.sqrMagnitude < 0.1f) return; sprintPressed = true; Debug.Log("Sprint button pressed"); }
         public void OnSprintReleased() { sprintPressed = false; Debug.Log("Sprint button released"); }
         public void OnCrouchPressed() { crouchPressed = true; isCrouching = true; Debug.Log("CrouchButton pressed"); }
-        public void OnCrouchReleased() { crouchPressed = false; isCrouching = false; Debug.Log("CrouchButton releassed"); }
+        public void OnCrouchReleased() { crouchPressed = false; isCrouching = false;  Debug.Log("CrouchButton releassed"); }
         public void OnAttackPressed() { attackPressed = true; Debug.Log("Attack Pressed"); }
         public void OnAttackReleased() { attackPressed =false; Debug.Log("Attack Released"); }
         void HandleTimers(){
@@ -350,7 +400,7 @@ namespace FPS
         void AdjustCharacterHeight(float height){
             float diff = capsuleCollider.height - height;
             capsuleCollider.height = height;
-            capsuleCollider.center = new Vector3(0, height * 0.5f, 0);
+            capsuleCollider.center += Vector3.up * (diff * 0.5f);
 
             // move camera down/up to match (so eyes move with character)
             float camY = Mathf.Clamp(playerCamera.transform.localPosition.y - diff, 0.1f, 2f);

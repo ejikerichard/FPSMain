@@ -33,19 +33,21 @@ namespace FPS {
             if(agent == null && target == null)
                 return;
 
-            //Dist = Vector3.Distance(transform.position, target.position);
+            Dist = Vector3.Distance(transform.position, target.position);
 
-            //if(Dist > agent.stoppingDistance){
-            //    agent.SetDestination(target.position);
-            //    isRun = true;
-            //    animator.SetBool("BearRun", true);
-            //}
+            if (Dist > agent.stoppingDistance)
+            {
+                agent.SetDestination(target.position);
+                isRun = true;
+                animator.SetBool("BearRun", true);
+            }
 
-            //if (Dist <= agent.stoppingDistance){
-            //    Debug.Log("Attack");
-            //    isRun = false;
-            //    animator.SetBool("BearRun", false);
-            //}
+            if (Dist <= agent.stoppingDistance)
+            {
+                Debug.Log("Attack");
+                isRun = false;
+                animator.SetBool("BearRun", false);
+            }
 
         }
 
