@@ -8,9 +8,10 @@ namespace FPS
         [SerializeField] private Camera armCam;
         [SerializeField] private LayerMask hitLayers;
         [SerializeField] private PlayerController controller;
+        [SerializeField] private WeaponInventory weaponInventory;
 
         [Header("Attack Settings")]
-        [SerializeField] private float range = 100f;
+        //[SerializeField] private float range = 100f;
         [SerializeField] private float timeBetweenAttacks = 0.15f;
         [SerializeField] private int maxCombo = 2;
         [SerializeField] private float comboBufferStart = 0.7f; // normalizedTime
@@ -28,13 +29,15 @@ namespace FPS
         float attackCooldown;
         RaycastHit hitInfo;
 
-        void Awake()
-        {
+        void Awake(){
             if (!controller)
                 controller = GetComponent<PlayerController>();
 
             if (!armCam)
                 armCam = Camera.main;
+
+            if(!weaponInventory)
+                weaponInventory = GetComponent<WeaponInventory>();
         }
 
         void Update()
@@ -57,15 +60,13 @@ namespace FPS
             controller.attackPressed = false;
 
             // start first attack
-            if (!isAttacking && attackCooldown <= 0f)
-            {
+            if(!isAttacking && attackCooldown <= 0f){
                 StartAttack();
                 return;
             }
 
             // buffer next attack
-            if (isAttacking)
-            {
+            if(isAttacking){
                 attackBuffered = true;
             }
         }
@@ -116,14 +117,15 @@ namespace FPS
             if(hit){
                 controller.anim.SetInteger(noHitParam, 0);
                 controller.anim.SetInteger(attackIDParam, attackIndex);
+                weaponInventory.DestroyWeapon();
             }else{
                 controller.anim.SetInteger(attackIDParam, 0);
                 controller.anim.SetInteger(noHitParam, attackIndex);
             }
 
-            if(hitInfo.transform != null && hitInfo.transform.tag != "Enemy"){
-                Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
-            }
+            //if(hitInfo.transform != null && hitInfo.transform.tag != "Enemy"){
+   
+            //}
         }
 
         // =========================
@@ -147,14 +149,18 @@ namespace FPS
         // =========================
         // HIT CHECK
         // =========================
-        bool PerformRaycast()
-        {
+        bool PerformRaycast(){
             return Physics.Raycast(
-                armCam.transform.position,
-                armCam.transform.forward, out hitInfo,
-                range,
-                hitLayers
-            );
+                    armCam.transform.position,
+                    armCam.transform.forward, out hitInfo,
+                    weaponInventory.range,
+                    hitLayers
+                    );
+        }
+
+        public void HandleSpawnDecal(){
+
+            Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
         }
     }
 }

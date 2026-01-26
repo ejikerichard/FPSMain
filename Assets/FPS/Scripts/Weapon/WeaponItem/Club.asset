@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FPS.WeaponData
   weaponName: Club
   attacks:
-  - damage: 10
+    damage: 10
     range: 5
-    hitRadius: 2
+    weaponHealth: 30
     hitVFX: {fileID: 0}
     hitSFX: {fileID: 0}

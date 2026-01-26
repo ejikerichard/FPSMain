@@ -5,9 +5,9 @@ namespace FPS
 {
     public class HandleAnimationEvents : MonoBehaviour
     {
-        [SerializeField] GameObject player;
+        [SerializeField] PlayerAttack player;
         void Start(){
-            player = GameObject.FindGameObjectWithTag("Player");
+            player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerAttack>();
         }
 
         public void PlayFootSound(){
@@ -16,8 +16,9 @@ namespace FPS
 
             player.GetComponent<PlayerController>().HandleFootsteps();
         }
-        public void ResetAttack(){
-            //player.GetComponent<PlayerAttack>().HandleResetAttack();
+        public void SpawnDecal(){
+            if(player == null) return;
+            player.GetComponent<PlayerAttack>().HandleSpawnDecal();
         }
     }
 }
