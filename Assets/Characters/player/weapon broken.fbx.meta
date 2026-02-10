@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: 23dfbad19c7a9c84e9e6df32f1fd33fb
+guid: 7d1632cd540a15b4e8539686611d9c57
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: fireaxe_mat
+    second: {fileID: 2100000, guid: 9cd297cd09890444ea0a74bbfae744e2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -92,15 +97,15 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     globalScale: 1
-    rootMotionBoneName: Root
+    rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: 0ad6edab6e61e63499efb1e63cc6e3df, type: 3}
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 2
+  avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
