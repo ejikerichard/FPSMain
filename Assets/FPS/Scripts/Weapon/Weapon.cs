@@ -4,12 +4,18 @@ using UnityEngine;
 namespace FPS {
     public class Weapon : MonoBehaviour
     {
+        public enum WeaponState{
+            NON_BROKEN, BROKEN
+        }
+
         public WeaponData WeaponData;
+        public WeaponState weaponState;
         public int weaponHealth;
 
         private void Start(){
             if (WeaponData != null){
-                weaponHealth = WeaponData.attacks.weaponHealth;
+                if(weaponState  == WeaponState.NON_BROKEN)
+                    weaponHealth = WeaponData.attacks.weaponHealth;
             }
         }
 

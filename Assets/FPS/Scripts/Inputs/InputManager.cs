@@ -28,6 +28,9 @@ namespace FPS
             onFootActions.Attack.performed += ctx => playerController.OnAttackPressed();
             onFootActions.Attack.canceled += ctx => playerController.OnAttackReleased();
 
+            onFootActions.Interact.performed += ctx => playerController.OnPickPress();
+            onFootActions.Interact.canceled += ctx => playerController.OnPickRelease();
+
         }
         private void Start(){
             playerController = GetComponent<PlayerController>();

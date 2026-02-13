@@ -23,6 +23,7 @@ namespace FPS
         public PlayerInput playerInput; // assign your InputAction asset (or added automatically)
         public AudioSource footstepSource;
         public AudioClip footstepClips;
+        private WeaponInventory weaponInventory;
 
         [Header("Movement")]
         public float walkSpeed = 5f;
@@ -32,6 +33,8 @@ namespace FPS
         public float deceleration = 20f;
         public float airControl = 0.5f;
         public float targetSpeed;
+        private float move_ID;
+        private float idle_ID;
         public float speedPercent;
 
         [Header("Jump & Gravity")]
@@ -114,6 +117,7 @@ namespace FPS
         void Start(){
             myBody = GetComponent<Rigidbody>();
             capsuleCollider = GetComponent<CapsuleCollider>();
+            weaponInventory = GetComponent<WeaponInventory>();
         }
         private void Update(){
             HandleStamina();
@@ -176,11 +180,24 @@ namespace FPS
                 targetSpeed = 1.2f;  // RUN
             }
 
+            if (weaponInventory.state == WeaponInventory.WeaponState.None){
+                idle_ID = 0;
+                move_ID = 1;
+            }
+            else if (weaponInventory.state == WeaponInventory.WeaponState.Equp){
+                idle_ID = 1;
+                move_ID = 2;
+            }
+
             // Smooth movement blending
             anim.SetFloat("Speed", targetSpeed, 0.1f, Time.deltaTime);
 
             // Optional: feed joystick strength into a secondary parameter
             anim.SetFloat("WalkBlend", moveAmount, 0.1f, Time.deltaTime);
+
+            anim.SetFloat("Move_ID", move_ID, 0.1f, Time.deltaTime);
+
+            anim.SetFloat("Idle_ID", idle_ID, 0.1f, Time.deltaTime);
 
             //Debug.Log($"MoveAmount={moveAmount}, Speed={targetSpeed}");
 
@@ -266,6 +283,8 @@ namespace FPS
         public void OnCrouchReleased() { crouchPressed = false; isCrouching = false;  Debug.Log("CrouchButton releassed"); }
         public void OnAttackPressed() { attackPressed = true; Debug.Log("Attack Pressed"); }
         public void OnAttackReleased() { attackPressed =false; Debug.Log("Attack Released"); }
+        public void OnPickPress() { weaponInventory.pickPressed = true; Debug.Log("Interact Press"); }
+        public void OnPickRelease() { weaponInventory.pickPressed = false; Debug.Log("Interact Release"); }
         void HandleTimers(){
             if (IsGrounded())
                 lastGroundTime = Time.time;
@@ -372,16 +391,16 @@ namespace FPS
             var clip = footstepClips;
             footstepSource.PlayOneShot(clip);
         }
-        void HandleRecoilReturn(){
-            // simple recoil Lerp back to zero
-            recoilOffset = Vector3.Lerp(recoilOffset, Vector3.zero, Time.deltaTime * recoilReturnSpeed);
-        }
+        //void HandleRecoilReturn(){
+        //    // simple recoil Lerp back to zero
+        //    recoilOffset = Vector3.Lerp(recoilOffset, Vector3.zero, Time.deltaTime * recoilReturnSpeed);
+        //}
 
-        public void ApplyRecoil(Vector2 recoil){
-            // recoil is in degrees: x = vertical, y = horizontal
-            recoilOffset += new Vector3(-recoil.x * recoilAmount, recoil.y * recoilAmount, 0);
-            // also rotate camera a bit (use MouseLook script to apply)
-        }
+        //public void ApplyRecoil(Vector2 recoil){
+        //    // recoil is in degrees: x = vertical, y = horizontal
+        //    recoilOffset += new Vector3(-recoil.x * recoilAmount, recoil.y * recoilAmount, 0);
+        //    // also rotate camera a bit (use MouseLook script to apply)
+        //}
         Vector3 GetOrientationForward(){
             if (orientation != null) return (Vector3.ProjectOnPlane(orientation.forward, Vector3.up)).normalized;
             return (Vector3.ProjectOnPlane(playerCamera.transform.forward, Vector3.up)).normalized;

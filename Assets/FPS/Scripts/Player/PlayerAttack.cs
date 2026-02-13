@@ -20,6 +20,7 @@ namespace FPS
         [SerializeField] private string attackIDParam = "AttackID";
         [SerializeField] private string noHitParam = "NoHit_ID";
         [SerializeField] private string isAttackParam = "IsAttacking";
+        [SerializeField] private string UnarmedAttackParam = "UnramedAttacking";
 
         [SerializeField] GameObject hitDecalPrefab;
 
@@ -112,7 +113,12 @@ namespace FPS
             isAttacking = true;
             attackCooldown = timeBetweenAttacks;
 
-            controller.anim.SetBool(isAttackParam, true);
+            if(weaponInventory.state == WeaponInventory.WeaponState.None){
+                controller.anim.SetBool(UnarmedAttackParam, true);
+            }else if(weaponInventory.state == WeaponInventory.WeaponState.Equp){
+                controller.anim.SetBool(isAttackParam, true);
+            }
+
 
             if(hit){
                 controller.anim.SetInteger(noHitParam, 0);
@@ -136,6 +142,8 @@ namespace FPS
             attackBuffered = false;
 
             controller.anim.SetBool(isAttackParam, false);
+            controller.anim.SetBool(UnarmedAttackParam, false);
+
 
             ResetCombo();
         }
