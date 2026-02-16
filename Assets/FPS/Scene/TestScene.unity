@@ -2034,7 +2034,7 @@ MonoBehaviour:
   attackRange: 3
   chaseRange: 15
   strafeDistance: 4
-  attackCooldown: 2
+  attackCooldown: 3
   dodgeChance: 0.15
   attackLungeForce: 3.5
   lungeDuration: 0.25
@@ -4273,7 +4273,7 @@ MonoBehaviour:
   attackRange: 3
   chaseRange: 15
   strafeDistance: 4
-  attackCooldown: 2
+  attackCooldown: 6
   dodgeChance: 0.15
   attackLungeForce: 3.5
   lungeDuration: 0.25
@@ -9308,7 +9308,7 @@ MonoBehaviour:
   attackRange: 3
   chaseRange: 15
   strafeDistance: 4
-  attackCooldown: 2
+  attackCooldown: 1
   dodgeChance: 0.15
   attackLungeForce: 3.5
   lungeDuration: 0.25
