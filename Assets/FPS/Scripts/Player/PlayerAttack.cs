@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 
 namespace FPS
 {
@@ -168,7 +169,10 @@ namespace FPS
 
         public void HandleSpawnDecal(){
 
-            Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
+            if(hitInfo.transform.tag != "Enemy")
+                Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
+
+            hitInfo.transform.GetComponent<EnemyController>().TakeDamage(10);
         }
     }
 }

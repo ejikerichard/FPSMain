@@ -17,31 +17,7 @@ ModelImporter:
     removeConstantScaleCurves: 0
     motionNodeName: 
     animationImportErrors: 
-    animationImportWarnings: "\nClip 'Scene' has import animation warnings that might
-      lower retargeting quality:\nNote: Activate translation DOF on avatar to improve
-      retargeting quality.\n\t'Spine1' has translation animation that will be discarded.\n\t'Spine2'
-      has translation animation that will be discarded.\n\t'Spine3' has translation
-      animation that will be discarded.\n\t'Spine3' is inbetween humanoid transforms
-      and has rotation animation that will be discarded.\n\t'Spine4' has translation
-      animation that will be discarded.\n\t'LeftShoulder01' has translation animation
-      that will be discarded.\n\t'LeftShoulder02' has translation animation that
-      will be discarded.\n\t'LeftForeArm' is inbetween humanoid transforms and has
-      rotation animation that will be discarded.\n\t'LeftHandIndex1' is inbetween
-      humanoid transforms and has rotation animation that will be discarded.\n\t'RightShoulder01'
-      has translation animation that will be discarded.\n\t'RightShoulder02' has
-      translation animation that will be discarded.\n\t'RightForeArm' is inbetween
-      humanoid transforms and has rotation animation that will be discarded.\n\t'RightHandIndex1'
-      is inbetween humanoid transforms and has rotation animation that will be discarded.\n\t'Neck01'
-      has translation animation that will be discarded.\n\t'Neck02' has translation
-      animation that will be discarded.\n\t'Neck02' is inbetween humanoid transforms
-      and has rotation animation that will be discarded.\n\t'Neck03' has translation
-      animation that will be discarded.\n\t'Head' has translation animation that
-      will be discarded.\n\t'Head' is inbetween humanoid transforms and has rotation
-      animation that will be discarded.\n\t'RightPelvis' has translation animation
-      that will be discarded.\n\t'RightLeg' is inbetween humanoid transforms and
-      has rotation animation that will be discarded.\n\t'LeftPelvis' has translation
-      animation that will be discarded.\n\t'LeftLeg' is inbetween humanoid transforms
-      and has rotation animation that will be discarded.\n"
+    animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -66,7 +42,7 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
