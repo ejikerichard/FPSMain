@@ -169,7 +169,7 @@ namespace FPS
 
         public void HandleSpawnDecal(){
 
-            if(hitInfo.transform.tag != "Enemy")
+            if(hitInfo.transform != null && hitInfo.transform.tag != "Enemy")
                 Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
 
             hitInfo.transform.GetComponent<EnemyController>().TakeDamage(10);
