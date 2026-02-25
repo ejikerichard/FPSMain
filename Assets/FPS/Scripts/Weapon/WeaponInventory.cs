@@ -23,6 +23,8 @@ namespace FPS {
         public bool isPicked = false;
         public bool pickPressed = false;
         private bool swappingWeapon = false;
+        //[HideInInspector]
+        public bool isBroken = false;
 
         private void Start(){
             handRange = range;
@@ -63,6 +65,7 @@ namespace FPS {
 
             activeWeapon.GetComponent<Weapon>().ReduceHealth(5);
             if (activeWeapon.GetComponent<Weapon>().weaponHealth <= 0){
+                isBroken = true;
                 if (!broken_weapon.activeSelf){
                     broken_weapon.SetActive(true);
                     return;
@@ -73,6 +76,7 @@ namespace FPS {
                     state = WeaponState.None;
                     activeWeapon = null;
                     isPicked = false;
+                    isBroken = false;
                     broken_weapon.SetActive(false);
                     broken_weapon = null;
                 }

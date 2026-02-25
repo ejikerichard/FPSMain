@@ -2007,7 +2007,6 @@ GameObject:
   m_Component:
   - component: {fileID: 217392969}
   - component: {fileID: 217392968}
-  - component: {fileID: 217392971}
   - component: {fileID: 217392965}
   m_Layer: 7
   m_Name: BearEnemy (2)
@@ -2028,27 +2027,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 0}
   animator: {fileID: 1026891201}
-  player: {fileID: 0}
-  moveSpeed: 3
-  rotationSpeed: 6
-  sleepRange: 25
-  chaseRange: 10
-  combatRange: 2
-  decisionCooldown: 2
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 128
-  checkRadius: 2
-  damage: 10
+  target: {fileID: 0}
+  chaseRange: 15
+  attackRange: 3
+  orbitDistance: 2.4
+  orbitSpeed: 80
+  flankBias: 0.6
   attackCooldown: 2
-  heavyAttackChance: 0.3
-  lightDamage: 10
-  heavyDamage: 25
-  lungeDistance: 2
-  lungeSpeed: 5
-  recoverySpeed: 5
+  lungeForce: 1
+  lungeDuration: 0.25
+  minEnemySpacing: 3
+  separationStrength: 10
+  maxSimultaneousAttackers: 2
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  smoothTime: 0.1
+  animationDeadzone: 0.15
+  animationSmoothTime: 0.5
+  movementSmoothing: 8
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  decisionCooldown: 1.5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  groundOffset: 1.02
 --- !u!136 &217392968
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2088,28 +2094,6 @@ Transform:
   - {fileID: 1026891202}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -184.55, z: 0}
---- !u!195 &217392971
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 217392964}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.9
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!1 &223800020
 GameObject:
   m_ObjectHideFlags: 0
@@ -2835,7 +2819,6 @@ MonoBehaviour:
   noHitParam: NoHit_ID
   isAttackParam: IsAttacking
   UnarmedAttackParam: UnramedAttacking
-  dropWeaponParam: Dropped
   hitDecalPrefab: {fileID: 179232, guid: b2ac1383a96f94a50b7ed458be173bbd, type: 3}
 --- !u!114 &281204832
 MonoBehaviour:
@@ -2866,7 +2849,6 @@ MonoBehaviour:
   handRange: 0
   isPicked: 0
   pickPressed: 0
-  isBroken: 0
 --- !u!1 &282278299
 GameObject:
   m_ObjectHideFlags: 0
@@ -4256,7 +4238,6 @@ GameObject:
   m_Component:
   - component: {fileID: 449616337}
   - component: {fileID: 449616336}
-  - component: {fileID: 449616339}
   - component: {fileID: 449616333}
   m_Layer: 7
   m_Name: BearEnemy (1)
@@ -4277,27 +4258,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 0}
   animator: {fileID: 147629120}
-  player: {fileID: 0}
-  moveSpeed: 3
-  rotationSpeed: 6
-  sleepRange: 25
-  chaseRange: 10
-  combatRange: 2
-  decisionCooldown: 2
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 128
-  checkRadius: 2
-  damage: 10
+  target: {fileID: 0}
+  chaseRange: 15
+  attackRange: 3
+  orbitDistance: 2.4
+  orbitSpeed: 80
+  flankBias: 0.6
   attackCooldown: 2
-  heavyAttackChance: 0.3
-  lightDamage: 10
-  heavyDamage: 25
-  lungeDistance: 2
-  lungeSpeed: 5
-  recoverySpeed: 5
+  lungeForce: 1
+  lungeDuration: 0.25
+  minEnemySpacing: 3
+  separationStrength: 10
+  maxSimultaneousAttackers: 2
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  smoothTime: 0.1
+  animationDeadzone: 0.15
+  animationSmoothTime: 0.5
+  movementSmoothing: 8
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  decisionCooldown: 1.5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  groundOffset: 1.02
 --- !u!136 &449616336
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4337,28 +4325,6 @@ Transform:
   - {fileID: 147629121}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -184.55, z: 0}
---- !u!195 &449616339
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 449616332}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.9
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!1 &450477647
 GameObject:
   m_ObjectHideFlags: 0
@@ -9293,7 +9259,6 @@ GameObject:
   m_Component:
   - component: {fileID: 957195860}
   - component: {fileID: 957195859}
-  - component: {fileID: 957195862}
   - component: {fileID: 957195857}
   m_Layer: 7
   m_Name: BearEnemy (4)
@@ -9314,27 +9279,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 0}
   animator: {fileID: 751178560}
-  player: {fileID: 0}
-  moveSpeed: 3
-  rotationSpeed: 6
-  sleepRange: 25
-  chaseRange: 10
-  combatRange: 2
-  decisionCooldown: 2
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 128
-  checkRadius: 2
-  damage: 10
+  target: {fileID: 0}
+  chaseRange: 15
+  attackRange: 3
+  orbitDistance: 2.4
+  orbitSpeed: 80
+  flankBias: 0.6
   attackCooldown: 2
-  heavyAttackChance: 0.3
-  lightDamage: 10
-  heavyDamage: 25
-  lungeDistance: 2
-  lungeSpeed: 5
-  recoverySpeed: 5
+  lungeForce: 1
+  lungeDuration: 0.25
+  minEnemySpacing: 3
+  separationStrength: 10
+  maxSimultaneousAttackers: 2
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  smoothTime: 0.1
+  animationDeadzone: 0.15
+  animationSmoothTime: 0.5
+  movementSmoothing: 8
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  decisionCooldown: 1.5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  groundOffset: 1.02
 --- !u!136 &957195859
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9374,28 +9346,6 @@ Transform:
   - {fileID: 751178561}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -184.55, z: 0}
---- !u!195 &957195862
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 957195856}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.9
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!1 &958209200
 GameObject:
   m_ObjectHideFlags: 0
@@ -17839,7 +17789,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2081390293}
   - component: {fileID: 2081390292}
-  - component: {fileID: 2081390298}
   - component: {fileID: 2081390296}
   m_Layer: 7
   m_Name: BearEnemy
@@ -17899,49 +17848,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 0}
   animator: {fileID: 668140757271030481}
-  player: {fileID: 0}
-  moveSpeed: 3
-  rotationSpeed: 6
-  sleepRange: 25
-  chaseRange: 10
-  combatRange: 2
-  decisionCooldown: 2
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 128
-  checkRadius: 2
-  damage: 10
+  target: {fileID: 0}
+  chaseRange: 15
+  attackRange: 3
+  orbitDistance: 2.4
+  orbitSpeed: 80
+  flankBias: 0.6
   attackCooldown: 2
-  heavyAttackChance: 0.3
-  lightDamage: 10
-  heavyDamage: 25
-  lungeDistance: 2
-  lungeSpeed: 5
-  recoverySpeed: 5
---- !u!195 &2081390298
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2081390291}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.9
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  lungeForce: 1
+  lungeDuration: 0.25
+  minEnemySpacing: 3
+  separationStrength: 10
+  maxSimultaneousAttackers: 2
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  smoothTime: 0.1
+  animationDeadzone: 0.15
+  animationSmoothTime: 0.5
+  movementSmoothing: 8
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  decisionCooldown: 1.5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  groundOffset: 1.02
 --- !u!1 &2082751331
 GameObject:
   m_ObjectHideFlags: 0
@@ -18364,7 +18298,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2124048000}
   - component: {fileID: 2124047999}
-  - component: {fileID: 2124048002}
   - component: {fileID: 2124047997}
   m_Layer: 7
   m_Name: BearEnemy (3)
@@ -18385,27 +18318,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 0}
   animator: {fileID: 1621660471}
-  player: {fileID: 0}
-  moveSpeed: 1
-  rotationSpeed: 6
-  sleepRange: 25
-  chaseRange: 10
-  combatRange: 2
-  decisionCooldown: 2
-  enemyMask:
-    serializedVersion: 2
-    m_Bits: 128
-  checkRadius: 2
-  damage: 10
+  target: {fileID: 0}
+  chaseRange: 15
+  attackRange: 3
+  orbitDistance: 2.4
+  orbitSpeed: 80
+  flankBias: 0.6
   attackCooldown: 2
-  heavyAttackChance: 0.3
-  lightDamage: 10
-  heavyDamage: 25
-  lungeDistance: 2
-  lungeSpeed: 5
-  recoverySpeed: 5
+  lungeForce: 1
+  lungeDuration: 0.25
+  minEnemySpacing: 3
+  separationStrength: 10
+  maxSimultaneousAttackers: 2
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  smoothTime: 0.1
+  animationDeadzone: 0.15
+  animationSmoothTime: 0.5
+  movementSmoothing: 8
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  decisionCooldown: 1.5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  groundOffset: 1.02
 --- !u!136 &2124047999
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -18445,28 +18385,6 @@ Transform:
   - {fileID: 1621660472}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -184.55, z: 0}
---- !u!195 &2124048002
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2124047996}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0.9
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!1 &2125775612
 GameObject:
   m_ObjectHideFlags: 0

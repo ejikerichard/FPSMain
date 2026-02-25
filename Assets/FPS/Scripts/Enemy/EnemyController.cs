@@ -1,357 +1,280 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace FPS
 {
     public class EnemyController : MonoBehaviour
     {
-        public enum EnemyState { Idle, Combat, Attack, Dead }
+        public enum EnemyState { Idle, Chase, Combat, Dead }
+        public enum CombatAction { Idle, Strafe, Attack, StepBack }
 
         [Header("References")]
+        [SerializeField] private NavMeshAgent agent;
         [SerializeField] private Animator animator;
-        [SerializeField] private Transform target;
+        [SerializeField] private Transform player;
+
+        [Header("Movement")]
+        [SerializeField] private float moveSpeed = 3.5f;
+        [SerializeField] private float rotationSpeed = 10f;
+        [SerializeField] private float sleepRange = 25f; // AI sleeps if player is further
 
         [Header("Ranges")]
-        [SerializeField] private float chaseRange = 20f;
-        [SerializeField] private float attackRange = 2.2f;
-        [SerializeField] private float orbitDistance = 2.4f;
+        [SerializeField] private float chaseRange = 12f;
+        [SerializeField] private float combatRange = 3f;
 
-        [Header("Orbit Settings")]
-        [SerializeField] private float orbitSpeed = 80f;
-        [SerializeField] private float flankBias = 0.6f; // higher = more go behind
+        [Header("Combat Settings")]
+        [SerializeField] private float decisionCooldown = 1.5f;
+        [SerializeField] private LayerMask enemyMask;
+        [SerializeField] private float checkRadius = 2.5f;
+        [SerializeField] private float damage = 10f;
+        [SerializeField] private float attackCooldown = 2.0f;
+        private float lastAttackTime;
 
-        [Header("Combat")]
-        [SerializeField] private float attackCooldown = 2f;
-        [SerializeField] private float lungeForce = 4f;
-        [SerializeField] private float lungeDuration = 0.25f;
+        [Header("Attack Settings")]
+        [SerializeField] private float heavyAttackChance = 0.3f; // 30% chance for heavy
+        [SerializeField] private float lightDamage = 10f;
+        [SerializeField] private float heavyDamage = 25f;
 
-        [Header("Spacing")]
-        [SerializeField] private float minEnemySpacing = 1.5f;
-        [SerializeField] private float separationStrength = 3f;
+        [Header("Lunge Settings")]
+        [SerializeField] private float lungeDistance = 2.0f;
+        [SerializeField] private float lungeSpeed = 5.0f;
+        [SerializeField] private float recoverySpeed = 2.0f;
 
-        [Header("Attack Limiter")]
-        [SerializeField] private int maxSimultaneousAttackers = 2;
+        private Vector3 originalPosition;
+        private bool isLunging = false;
 
-        [Header("LOS Settings")]
-        [SerializeField] private LayerMask obstacleMask; // Set this to your "World/Obstacle" layer
-        private bool hasLineOfSight;
-
-        [Header("Movement Smoothing")]
-        [SerializeField] private float smoothTime = 0.1f;
-        private Vector3 moveDirection;
-        private Vector3 smoothVelocity;
-        [SerializeField] private float animationDeadzone = 0.15f; // Minimum move speed to animate
-        [SerializeField] private float animationSmoothTime = 0.1f; // How fast transitions happen
-        [SerializeField] private float movementSmoothing = 8f; // Higher = Snappier, Lower = Weightier
-        [SerializeField] private LayerMask wallLayer; // Set to your environment layer
-        private Vector3 currentVelocity;
-
-        [Header("Decision Logic")]
-        [SerializeField] private float decisionCooldown = 1.5f; // Time spent strafing before attacking
-        private float decisionTimer;
-        private bool isStrafing; // Local lock for the "Strafe" act
-
-        private static List<EnemyController> allEnemies = new List<EnemyController>();
-        private static int currentAttackers = 0;
-
-        [Header("Grounding")]
-        [SerializeField] private LayerMask groundLayer;
-        [SerializeField] private float groundOffset = 0.1f; // Adjust based on model pivot
-
+        private float currentDamage; // Set this when picking the attack
 
         private EnemyState currentState;
-        private float attackTimer;
-        private float health = 100f;
-        private bool isAttacking;
-        private float orbitDirection;
-        private Vector3 lastPos;
-        // =====================================================
+        private CombatAction currentAction;
+        private float decisionTimer;
+        private float strafeDir;
+        private Collider[] nearbyEnemies = new Collider[5];
 
-        void OnEnable() => allEnemies.Add(this);
-        void OnDisable() => allEnemies.Remove(this);
+        //private static readonly int SpeedHash = Animator.StringToHash("Speed");
+        //private static readonly int AttackHash = Animator.StringToHash("Attack");
+
+        void Awake()
+        {
+            if (!agent) agent = GetComponent<NavMeshAgent>();
+
+            // Let the agent handle movement logic but we'll apply it via velocity
+            agent.updatePosition = true;
+            agent.updateRotation = false; // We handle rotation for smoother lerping
+            agent.speed = moveSpeed;
+        }
 
         void Start()
         {
-            animator = transform.GetChild(0).GetComponent<Animator>();
-            target = GameObject.FindGameObjectWithTag("Player").transform;
-
-            orbitDirection = Random.value > 0.5f ? 1f : -1f;
-
+            if (!player) player = GameObject.FindGameObjectWithTag("Player")?.transform;
+            strafeDir = Random.value > 0.5f ? 1f : -1f;
         }
 
         void Update()
         {
-            if (target == null || currentState == EnemyState.Dead)
-                return;
+            if (!player) return;
 
-            attackTimer -= Time.deltaTime;
+            float distSq = (player.position - transform.position).sqrMagnitude;
+            if (distSq > sleepRange * sleepRange) return; // Optimization: Skip AI if too far
 
-            float dist = Vector3.Distance(transform.position, target.position);
+            UpdateTimers();
+            HandleStateTransitions(distSq);
+            HandleRotation();
+            UpdateAnimations();
+        }
 
-            if (dist > chaseRange)
-                Idle();
+        private void UpdateTimers()
+        {
+            if (decisionTimer > 0) decisionTimer -= Time.deltaTime;
+        }
+
+        private void HandleStateTransitions(float distSq)
+        {
+            if (distSq > chaseRange * chaseRange)
+                ChangeState(EnemyState.Idle);
+            else if (distSq > combatRange * combatRange)
+                ChangeState(EnemyState.Chase);
             else
-                CombatLogic(dist);
+                ChangeState(EnemyState.Combat);
+
+            ExecuteCurrentState();
         }
 
-        // =====================================================
-        // IDLE
-        // =====================================================
-
-        void Idle()
+        private void ExecuteCurrentState()
         {
-            currentState = EnemyState.Idle;
+            switch (currentState)
+            {
+                case EnemyState.Chase:
+                    agent.isStopped = false;
+                    agent.SetDestination(player.position);
+                    break;
 
-            animator.SetBool("BearRun", false);
-            animator.SetFloat("MoveX", 0);
-            animator.SetFloat("MoveZ", 0);
-        }
+                case EnemyState.Combat:
+                    DoCombatLogic();
+                    break;
 
-        // =====================================================
-        // MAIN COMBAT
-        // =====================================================
-
-        void CombatLogic(float dist){
-            // 1. If currently lunging/animating an attack, don't do anything else
-            if (isAttacking) return;
-
-            // 2. If we are outside attack range, just move to player
-            if(dist > attackRange){
-                isStrafing = false; // Reset decision
-                OrbitPlayer();
-                return;
-            }
-
-            // 3. INSIDE ATTACK RANGE: Make a decision if we haven't already
-            decisionTimer -= Time.deltaTime;
-
-            if(decisionTimer <= 0){
-                // 50/50 chance to Strafe or Attack
-                if(Random.value > 0.5f){
-                    StartCoroutine(PerformAttackAction());
-                }
-                else{
-                    StartCoroutine(PerformStrafeAction());
-                }
+                case EnemyState.Idle:
+                    agent.isStopped = true;
+                    break;
             }
         }
 
-        bool CheckLineOfSight()
-        {
-            Vector3 directionToPlayer = (target.position - transform.position).normalized;
-            float distanceToPlayer = Vector3.Distance(transform.position, target.position);
-
-            // Raycast from enemy eyes (transform.position + offset) to player center
-            // Returns true if it hits NOTHING (meaning path is clear) or hits the Player
-            if (Physics.Raycast(transform.position + Vector3.up, directionToPlayer, out RaycastHit hit, distanceToPlayer, obstacleMask))
+        private void DoCombatLogic(){
+            if (decisionTimer <= 0f)
             {
-                if (hit.collider.CompareTag("Player"))
-                    return true;
-
-                return false; // Hit a wall or pillar
+                decisionTimer = decisionCooldown + Random.Range(-0.2f, 0.2f);
+                ChooseCombatAction();
             }
 
-            return true; // Path is clear
-        }
-        // =====================================================
-        // TRUE ORBIT STRAFING + BEHIND MOVEMENT
-        // =====================================================
-
-        void OrbitPlayer()
-        {
-            currentState = EnemyState.Combat;
-
-            float dist = Vector3.Distance(transform.position, target.position);
-
-            // 1. DIRECTION LOGIC
-            Vector3 desiredDir = Vector3.zero;
-
-            if (dist > attackRange + 1f) // Outside range: Move toward player
+            switch (currentAction)
             {
-                desiredDir = (target.position - transform.position).normalized;
+                case CombatAction.Strafe:
+                    agent.isStopped = false;
+                    agent.SetDestination(CalculateStrafePosition());
+                    break;
+
+                case CombatAction.StepBack:
+                    agent.isStopped = false;
+                    Vector3 backwardDir = (transform.position - player.position).normalized;
+                    Vector3 targetRetreat = transform.position + backwardDir * 3f;
+
+                    // Safety: Ensure the retreat point is valid on the NavMesh
+                    if (NavMesh.SamplePosition(targetRetreat, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
+                    {
+                        agent.SetDestination(hit.position);
+                    }
+                    break;
+
+                case CombatAction.Idle:
+                case CombatAction.Attack:
+                    agent.isStopped = true;
+                    break;
             }
-            else // Inside range: Start Strafing
-            {
-                Vector3 toPlayer = (target.position - transform.position).normalized;
-                Vector3 strafe = Vector3.Cross(toPlayer, Vector3.up) * orbitDirection;
-
-                // Maintain distance: if too close, push away; if too far, pull in
-                Vector3 distanceCorrection = toPlayer * (dist - orbitDistance);
-
-                desiredDir = (strafe + distanceCorrection + SeparationForce()).normalized;
-            }
-
-            // 2. THE FLIGHT FIX: Kill the Y movement
-            desiredDir.y = 0;
-
-            // 3. SMOOTH MOVEMENT
-            moveDirection = Vector3.Lerp(moveDirection, desiredDir, Time.deltaTime * movementSmoothing);
-            Vector3 nextPos = transform.position + (moveDirection * (orbitSpeed * 0.05f) * Time.deltaTime);
-
-            // 4. THE GROUND SNAP: Raycast down to find the floor
-            RaycastHit hit;
-            if (Physics.Raycast(nextPos + Vector3.up * 2f, Vector3.down, out hit, 5f, groundLayer))
-            {
-                nextPos.y = hit.point.y + groundOffset;
-            }
-
-            transform.position = nextPos;
-
-            UpdateAnimation();
-            LookAtTarget();
         }
 
-        Vector3 SeparationForce()
-        {
-            Vector3 force = Vector3.zero;
-            foreach (var enemy in allEnemies)
-            {
-                if (enemy == this || enemy == null) continue;
-                float dist = Vector3.Distance(transform.position, enemy.transform.position);
-                if (dist < minEnemySpacing)
-                {
-                    // Gentle nudge away from neighbors
-                    force += (transform.position - enemy.transform.position).normalized * (1f - dist / minEnemySpacing);
-                }
-            }
-            return force * separationStrength;
+        private void ChooseCombatAction(){
+            float roll = Random.value;
+
+            if (roll < 0.15f) currentAction = CombatAction.Idle;
+            else if (roll < 0.50f) currentAction = CombatAction.Strafe;   // 35% chance
+            else if (roll < 0.70f) currentAction = CombatAction.StepBack; // 20% chance
+            else PerformAttack();
         }
-        IEnumerator PerformStrafeAction()
-        {
-            isStrafing = true;
-            decisionTimer = Random.Range(1f, 2.5f); // How long to strafe for
 
-            // Flip direction randomly when starting a new strafe
-            orbitDirection = Random.value > 0.5f ? 1f : -1f;
+        private void PerformAttack(){
+            if (Time.time < lastAttackTime + attackCooldown || isLunging) return;
 
-            while(decisionTimer > 0 && !isAttacking){
-                OrbitPlayer(); // Use your existing smooth orbit logic here
+            lastAttackTime = Time.time;
+            currentAction = CombatAction.Attack;
+
+            // Pick attack type
+            bool isHeavy = Random.value < 0.3f;
+            string trigger = isHeavy ? "HeavyAttack" : "LightAttack";
+            animator.SetTrigger(trigger);
+
+            // Start the physical movement (Lunge)
+            StartCoroutine(AttackLungeRoutine());
+        }
+
+        private System.Collections.IEnumerator AttackLungeRoutine(){
+            isLunging = true;
+            agent.isStopped = true; // Stop NavMesh from fighting our manual movement
+
+            Vector3 startPos = transform.position;
+            Vector3 targetPos = transform.position + transform.forward * lungeDistance;
+
+            // 1. Lunge Forward (Wind-up to Hit)
+            float elapsed = 0;
+            while(elapsed < 0.2f) // Fast snap forward (adjust time to match animation)
+            {
+                transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * lungeSpeed);
+                elapsed += Time.deltaTime;
                 yield return null;
             }
 
-            isStrafing = false;
-        }
+            // Wait slightly for the "Hit" to land (sync with TriggerMeleeDamage)
+            yield return new WaitForSeconds(0.3f);
 
-        IEnumerator PerformAttackAction()
-        {
-            // Check if we are allowed to attack (Global Limiter)
-            if(currentAttackers < maxSimultaneousAttackers && attackTimer <= 0){
-                yield return StartCoroutine(AttackRoutine()); // Your existing AttackRoutine
-                decisionTimer = decisionCooldown; // Pause before next decision
-            }
-            else{
-                // If too many enemies are already attacking, just strafe instead
-                yield return StartCoroutine(PerformStrafeAction());
-            }
-        }
-        // =====================================================
-        // ATTACK
-        // =====================================================
-
-        IEnumerator AttackRoutine()
-        {
-            currentAttackers++;
-            isAttacking = true;
-            attackTimer = attackCooldown + Random.Range(0f, 0.5f);
-;
-            LookAtTarget();
-
-            animator.SetTrigger(Random.value > 0.5f ? "LightAttack" : "HeavyAttack");
-
-            yield return new WaitForSeconds(0.2f);
-            yield return StartCoroutine(LungeForward());
-            yield return new WaitForSeconds(0.5f);
-
-            isAttacking = false;
-            currentAttackers--;
-        }
-
-        IEnumerator LungeForward()
-        {
-            float timer = 0f;
-            Vector3 dir = (target.position - transform.position).normalized;
-            dir.y = 0;
-
-            while (timer < lungeDuration)
-            {
-                transform.Translate(dir * lungeForce * Time.deltaTime);
-                timer += Time.deltaTime;
+            // 2. Recovery (Move back to original spot)
+            elapsed = 0;
+            while (elapsed < 0.5f){
+                transform.position = Vector3.Lerp(transform.position, startPos, Time.deltaTime * recoverySpeed);
+                elapsed += Time.deltaTime;
                 yield return null;
             }
+
+            agent.isStopped = false;
+            isLunging = false;
+            currentAction = CombatAction.Idle;
         }
 
-        // =====================================================
-        // ANIMATION
-        // =====================================================
+        public void TriggerMeleeDamage(){
+            float distSq = (player.position - transform.position).sqrMagnitude;
+            if(distSq <= combatRange * combatRange){
+                Debug.Log($"Hit! Type: {(currentDamage > lightDamage ? "Heavy" : "Light")} | Damage: {currentDamage}");
+                // player.GetComponent<IHealth>()?.TakeDamage(currentDamage);
+            }
+        }
 
-        void UpdateAnimation()
+        private Vector3 CalculateStrafePosition()
         {
-            // 1. Calculate the magnitude (speed) of current movement
-            float currentMoveSpeed = moveDirection.magnitude;
+            CheckForNearbyEnemies();
+            Vector3 offset = Vector3.Cross(Vector3.up, (player.position - transform.position).normalized);
+            return transform.position + (offset * strafeDir * 2f);
+        }
 
-            // 2. Check if we are actually moving significantly
-            bool isMoving = currentMoveSpeed > animationDeadzone;
+        private void CheckForNearbyEnemies()
+        {
+            int count = Physics.OverlapSphereNonAlloc(transform.position, checkRadius, nearbyEnemies, enemyMask);
+            for(int i = 0; i < count; i++)
+            {
+                if (nearbyEnemies[i].transform == transform) continue;
 
-            // 3. Update the Boolean for the "BearRun" state
+                // If an enemy is in our way, flip strafe direction
+                float dot = Vector3.Dot(transform.right, (nearbyEnemies[i].transform.position - transform.position).normalized);
+                if (dot > 0.5f && strafeDir > 0) strafeDir = -1f;
+                else if (dot < -0.5f && strafeDir < 0) strafeDir = 1f;
+            }
+        }
+
+        private void HandleRotation(){
+            Vector3 lookDir = (player.position - transform.position);
+            lookDir.y = 0;
+            if(lookDir.sqrMagnitude > 0.1f){
+                Quaternion targetRot = Quaternion.LookRotation(lookDir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            }
+        }
+
+        private void UpdateAnimations(){
+            if (!animator) return;
+
+            // Use desiredVelocity for more responsive animation transitions
+            Vector3 moveVec = agent.velocity;
+
+            // If agent is basically still, use a tiny vector to avoid flickering
+            if (moveVec.sqrMagnitude < 0.1f) moveVec = Vector3.zero;
+
+            // Convert to local space
+            Vector3 localVelocity = transform.InverseTransformDirection(moveVec);
+
+            // Normalize against moveSpeed
+            float x = localVelocity.x / moveSpeed;
+            float z = localVelocity.z / moveSpeed;
+
+            // Apply to Blend Tree
+            animator.SetFloat("MoveX", x, 0.1f, Time.deltaTime);
+            animator.SetFloat("MoveZ", z, 0.1f, Time.deltaTime);
+
+            // Determine if we are moving based on the agent's actual velocity
+            bool isMoving = agent.velocity.sqrMagnitude > 0.1f || isLunging;
             animator.SetBool("BearRun", isMoving);
-
-            if (isMoving)
-            {
-                // Convert world moveDirection to local space (Left/Right, Forward/Back)
-                Vector3 localDir = transform.InverseTransformDirection(moveDirection);
-
-                // Normalize the values so they stay between -1 and 1 for the Blend Tree
-                // Using 'DampTime' here prevents the "snapping" between animations
-                animator.SetFloat("MoveX", localDir.x, animationSmoothTime, Time.deltaTime);
-                animator.SetFloat("MoveZ", localDir.z, animationSmoothTime, Time.deltaTime);
-            }
-            else
-            {
-                // Force parameters to 0 so the Blend Tree returns to the center (Idle)
-                animator.SetFloat("MoveX", 0, animationSmoothTime, Time.deltaTime);
-                animator.SetFloat("MoveZ", 0, animationSmoothTime, Time.deltaTime);
-            }
         }
 
-        // =====================================================
-        // ROTATION
-        // =====================================================
-
-        void LookAtTarget()
+        private void ChangeState(EnemyState newState)
         {
-            Vector3 direction = (target.position - transform.position).normalized;
-            direction.y = 0;
-
-            if (direction == Vector3.zero)
-                return;
-
-            Quaternion lookRot = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * 10f);
-        }
-
-        // =====================================================
-        // DAMAGE
-        // =====================================================
-
-        public void TakeDamage(float damage)
-        {
-            if (currentState == EnemyState.Dead)
-                return;
-
-            health -= damage;
-            animator.SetTrigger("Hit");
-
-            if (health <= 0)
-                Die();
-        }
-
-        void Die()
-        {
-            currentState = EnemyState.Dead;
-            animator.SetTrigger("Die");
-            Destroy(gameObject, 4f);
+            if (currentState == newState) return;
+            currentState = newState;
         }
     }
 }

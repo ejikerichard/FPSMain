@@ -22,6 +22,7 @@ namespace FPS
         [SerializeField] private string noHitParam = "NoHit_ID";
         [SerializeField] private string isAttackParam = "IsAttacking";
         [SerializeField] private string UnarmedAttackParam = "UnramedAttacking";
+        [SerializeField] private string dropWeaponParam = "Dropped";
 
         [SerializeField] GameObject hitDecalPrefab;
 
@@ -81,7 +82,7 @@ namespace FPS
                 return;
 
             if (!controller.IsAnimatorTag("AttackHit") &&
-                !controller.IsAnimatorTag("AttackNoHit"))
+                !controller.IsAnimatorTag("AttackNoHit") && !controller.IsAnimatorTag("DropWeapon"))
                 return;
 
             AnimatorStateInfo state = controller.stateInfo;
@@ -116,16 +117,24 @@ namespace FPS
 
             if(weaponInventory.state == WeaponInventory.WeaponState.None){
                 controller.anim.SetBool(UnarmedAttackParam, true);
-            }else if(weaponInventory.state == WeaponInventory.WeaponState.Equp){
+            }else if(weaponInventory.state == WeaponInventory.WeaponState.Equp && weaponInventory.isBroken == false){
                 controller.anim.SetBool(isAttackParam, true);
             }
 
+            if(weaponInventory.isBroken == true){
+                controller.anim.SetTrigger(dropWeaponParam);
+                EndAttack();
+            }
 
-            if(hit){
-                controller.anim.SetInteger(noHitParam, 0);
-                controller.anim.SetInteger(attackIDParam, attackIndex);
+
+            if (hit){
+                if(weaponInventory.isBroken == false){
+                    controller.anim.SetInteger(noHitParam, 0);
+                    controller.anim.SetInteger(attackIDParam, attackIndex);
+                }
                 weaponInventory.DestroyWeapon();
-            }else{
+            }
+            else{
                 controller.anim.SetInteger(attackIDParam, 0);
                 controller.anim.SetInteger(noHitParam, attackIndex);
             }
@@ -172,7 +181,8 @@ namespace FPS
             if(hitInfo.transform != null && hitInfo.transform.tag != "Enemy")
                 Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
 
-            hitInfo.transform.GetComponent<EnemyController>().TakeDamage(10);
+            //if(hitInfo.transform != null && hitInfo.transform.CompareTag("Enemy"))
+            //    hitInfo.transform.GetComponent<EnemyController>().TakeDamage(10);
         }
     }
 }
