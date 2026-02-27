@@ -51,6 +51,10 @@ namespace FPS
         [SerializeField] private float orbitDistance = 3f;
         [SerializeField] private float orbitSpeed = 120f; // degrees/sec
 
+        [Header("Health")]
+        [SerializeField] private float maxHealth = 100f;
+        private float currentHealth;
+
         private EnemyState currentState;
         private CombatAction currentAction;
         private CombatAction lastAction;
@@ -84,6 +88,8 @@ namespace FPS
             agent.updateRotation = false;
             agent.speed = moveSpeed;
             agent.avoidancePriority = Random.Range(0, 99);
+
+            currentHealth = maxHealth; // Initialize health
         }
 
         void Start()
@@ -431,6 +437,32 @@ namespace FPS
             float distSq = (player.position - transform.position).sqrMagnitude;
             if (distSq <= combatRange * combatRange)
                 Debug.Log($"Hit Player for {currentDamage}");
+        }
+        public void TakeDamage(float damage){
+            if (currentState == EnemyState.Dead) return;
+
+            currentHealth -= damage;
+
+            if (currentHealth <= 0)
+                Die();
+            else
+                animator.SetTrigger("Hit"); // optional hit reaction
+        }
+        void Die(){
+            currentState = EnemyState.Dead;
+            agent.isStopped = true;
+            actionLocked = true;
+
+            animator.SetTrigger("Die"); // play death animation
+
+            //if (deathEffect)
+            //    Instantiate(deathEffect, transform.position, Quaternion.identity);
+
+            // Disable collider and destroy object after animation
+            Collider col = GetComponent<Collider>();
+            if (col) col.enabled = false;
+
+            Destroy(gameObject, 3f); // destroy after 3 seconds (or adjust)
         }
     }
 }
