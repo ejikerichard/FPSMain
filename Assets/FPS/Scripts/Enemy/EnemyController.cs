@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.AI;
 
 namespace FPS
@@ -6,7 +8,7 @@ namespace FPS
     public class EnemyController : MonoBehaviour
     {
         public enum EnemyState { Idle, Chase, Combat, Dead }
-        public enum CombatAction { Idle, Strafe, Attack, StepBack }
+        public enum CombatAction { Idle, Strafe, Attack, StepBack, Dash }
 
         [Header("References")]
         [SerializeField] private NavMeshAgent agent;
@@ -16,265 +18,419 @@ namespace FPS
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float rotationSpeed = 10f;
-        [SerializeField] private float sleepRange = 25f; // AI sleeps if player is further
+        [SerializeField] private float sleepRange = 25f;
+        [SerializeField] private float personalSpace = 2f;
 
         [Header("Ranges")]
         [SerializeField] private float chaseRange = 12f;
         [SerializeField] private float combatRange = 3f;
 
-        [Header("Combat Settings")]
-        [SerializeField] private float decisionCooldown = 1.5f;
-        [SerializeField] private LayerMask enemyMask;
-        [SerializeField] private float checkRadius = 2.5f;
-        [SerializeField] private float damage = 10f;
-        [SerializeField] private float attackCooldown = 2.0f;
-        private float lastAttackTime;
+        [Header("Combat")]
+        [SerializeField] private float decisionCooldown = 1.1f;
+        [SerializeField] private float attackCooldown = 2f;
+        [SerializeField] private float dashCooldown = 3f;
 
-        [Header("Attack Settings")]
-        [SerializeField] private float heavyAttackChance = 0.3f; // 30% chance for heavy
+        [Header("Damage")]
         [SerializeField] private float lightDamage = 10f;
         [SerializeField] private float heavyDamage = 25f;
+        [SerializeField] private float heavyAttackChance = 0.3f;
 
-        [Header("Lunge Settings")]
-        [SerializeField] private float lungeDistance = 2.0f;
-        [SerializeField] private float lungeSpeed = 5.0f;
-        [SerializeField] private float recoverySpeed = 2.0f;
+        [Header("Lunge")]
+        [SerializeField] private float lungeSpeed = 6f;
+        [SerializeField] private float recoverySpeed = 3f;
 
-        private Vector3 originalPosition;
-        private bool isLunging = false;
+        [Header("Dash")]
+        [SerializeField] private float dashForce = 15f;
+        [SerializeField] private float dashDuration = 0.25f;
 
-        private float currentDamage; // Set this when picking the attack
+        [Header("Enemy Avoidance")]
+        [SerializeField] private LayerMask enemyMask;
+        [SerializeField] private float checkRadius = 2.5f;
+
+        [Header("Orbiting")]
+        [SerializeField] private float orbitDistance = 3f;
+        [SerializeField] private float orbitSpeed = 120f; // degrees/sec
 
         private EnemyState currentState;
         private CombatAction currentAction;
-        private float decisionTimer;
-        private float strafeDir;
-        private Collider[] nearbyEnemies = new Collider[5];
+        private CombatAction lastAction;
 
-        //private static readonly int SpeedHash = Animator.StringToHash("Speed");
-        //private static readonly int AttackHash = Animator.StringToHash("Attack");
+        float decisionTimer;
+        float actionCommitTimer;
+        float lastAttackTime;
+        float lastDashTime;
+
+        bool actionLocked;
+        Coroutine activeRoutine;
+
+        float strafeDir;
+        Vector3 targetOffset;
+        float currentDamage;
+
+        [SerializeField] private float flipCooldown = 0.5f;
+        private float lastFlipTime;
+
+        private float orbitAngle; // internal angle for smooth orbit
+        private int orbitSlot;
+
+        private Collider[] nearbyEnemies = new Collider[20];
+
+        /* ===================================================== */
 
         void Awake()
         {
             if (!agent) agent = GetComponent<NavMeshAgent>();
 
-            // Let the agent handle movement logic but we'll apply it via velocity
-            agent.updatePosition = true;
-            agent.updateRotation = false; // We handle rotation for smoother lerping
+            agent.updateRotation = false;
             agent.speed = moveSpeed;
+            agent.avoidancePriority = Random.Range(0, 99);
         }
 
         void Start()
         {
-            if (!player) player = GameObject.FindGameObjectWithTag("Player")?.transform;
-            strafeDir = Random.value > 0.5f ? 1f : -1f;
+            if (!player)
+                player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+            strafeDir = Random.value > 0.5f ? 1 : -1;
+
+            float angle = Random.Range(0, 360) * Mathf.Deg2Rad;
+            targetOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * personalSpace;
         }
+
+        /* ===================================================== */
 
         void Update()
         {
             if (!player) return;
 
             float distSq = (player.position - transform.position).sqrMagnitude;
-            if (distSq > sleepRange * sleepRange) return; // Optimization: Skip AI if too far
 
-            UpdateTimers();
-            HandleStateTransitions(distSq);
+            if (distSq > sleepRange * sleepRange) return;
+
+            decisionTimer -= Time.deltaTime;
+            actionCommitTimer -= Time.deltaTime;
+
+            if (!actionLocked)
+                HandleStateTransitions(distSq);
+
             HandleRotation();
             UpdateAnimations();
+
+            // Update orbit slot occasionally for multi-enemy formation
+            if (currentState == EnemyState.Combat && Time.frameCount % 20 == 0)
+                AssignOrbitSlot();
+
+            // Update nearby enemies for separation
+            if (Time.frameCount % 10 == 0)
+                Physics.OverlapSphereNonAlloc(transform.position, checkRadius, nearbyEnemies, enemyMask);
         }
 
-        private void UpdateTimers()
-        {
-            if (decisionTimer > 0) decisionTimer -= Time.deltaTime;
-        }
+        /* ================= STATE MACHINE ================= */
 
-        private void HandleStateTransitions(float distSq)
+        void HandleStateTransitions(float distSq)
         {
-            if (distSq > chaseRange * chaseRange)
+            float chaseSq = chaseRange * chaseRange;
+            float combatSq = combatRange * combatRange;
+
+            if (distSq > chaseSq)
                 ChangeState(EnemyState.Idle);
-            else if (distSq > combatRange * combatRange)
+            else if (distSq > combatSq)
                 ChangeState(EnemyState.Chase);
             else
                 ChangeState(EnemyState.Combat);
 
-            ExecuteCurrentState();
+            ExecuteState();
         }
 
-        private void ExecuteCurrentState()
+        void ExecuteState()
         {
             switch (currentState)
             {
-                case EnemyState.Chase:
-                    agent.isStopped = false;
-                    agent.SetDestination(player.position);
-                    break;
-
-                case EnemyState.Combat:
-                    DoCombatLogic();
-                    break;
-
                 case EnemyState.Idle:
                     agent.isStopped = true;
                     break;
+
+                case EnemyState.Chase:
+                    agent.isStopped = false;
+                    agent.stoppingDistance = 0.5f;
+                    MoveWithSeparation(player.position + targetOffset);
+                    decisionTimer = 0;
+                    break;
+
+                case EnemyState.Combat:
+                    CombatLogic();
+                    break;
             }
         }
 
-        private void DoCombatLogic(){
-            if (decisionTimer <= 0f)
+        /* ================= COMBAT ================= */
+
+        void CombatLogic()
+        {
+            if (decisionTimer > 0 || actionCommitTimer > 0)
+                return;
+
+            decisionTimer = decisionCooldown * Random.Range(0.85f, 1.1f);
+
+            ChooseCombatAction();
+            ExecuteCombatAction();
+
+            actionCommitTimer = 0.6f;
+        }
+
+        void ChooseCombatAction()
+        {
+            float distance = Vector3.Distance(transform.position, player.position);
+            float roll = Random.value;
+
+            bool canAttack = Time.time > lastAttackTime + attackCooldown;
+            bool canDash = Time.time > lastDashTime + dashCooldown;
+
+            if (distance <= combatRange * 0.85f && canAttack)
             {
-                decisionTimer = decisionCooldown + Random.Range(-0.2f, 0.2f);
-                ChooseCombatAction();
+                currentAction = roll < 0.7f ? CombatAction.Attack : CombatAction.Strafe;
+                return;
             }
+
+            if (!canAttack)
+            {
+                currentAction = roll < 0.7f ? CombatAction.StepBack : CombatAction.Strafe;
+                return;
+            }
+
+            if (roll < 0.5f) currentAction = CombatAction.Attack;
+            else if (roll < 0.8f) currentAction = CombatAction.Strafe;
+            else if (canDash && roll < 0.95f) currentAction = CombatAction.Dash;
+            else currentAction = CombatAction.Idle;
+
+            if (currentAction == CombatAction.Idle && lastAction == CombatAction.Idle)
+                currentAction = CombatAction.Strafe;
+        }
+
+        void ExecuteCombatAction()
+        {
+            lastAction = currentAction;
 
             switch (currentAction)
             {
+                case CombatAction.Attack:
+                    PerformAttack();
+                    break;
+
                 case CombatAction.Strafe:
-                    agent.isStopped = false;
-                    agent.SetDestination(CalculateStrafePosition());
+                    MoveWithSeparation(CalcOrbitPos());
                     break;
 
                 case CombatAction.StepBack:
-                    agent.isStopped = false;
-                    Vector3 backwardDir = (transform.position - player.position).normalized;
-                    Vector3 targetRetreat = transform.position + backwardDir * 3f;
+                    Vector3 retreat = (transform.position - player.position).normalized;
+                    MoveWithSeparation(player.position + retreat * (combatRange + 2f));
+                    break;
 
-                    // Safety: Ensure the retreat point is valid on the NavMesh
-                    if (NavMesh.SamplePosition(targetRetreat, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
-                    {
-                        agent.SetDestination(hit.position);
-                    }
+                case CombatAction.Dash:
+                    StartDash();
                     break;
 
                 case CombatAction.Idle:
-                case CombatAction.Attack:
                     agent.isStopped = true;
                     break;
             }
         }
 
-        private void ChooseCombatAction(){
-            float roll = Random.value;
+        /* ================= MOVEMENT + SEPARATION ================= */
 
-            if (roll < 0.15f) currentAction = CombatAction.Idle;
-            else if (roll < 0.50f) currentAction = CombatAction.Strafe;   // 35% chance
-            else if (roll < 0.70f) currentAction = CombatAction.StepBack; // 20% chance
-            else PerformAttack();
-        }
+        Vector3 ComputeSeparation()
+        {
+            Vector3 separationVec = Vector3.zero;
 
-        private void PerformAttack(){
-            if (Time.time < lastAttackTime + attackCooldown || isLunging) return;
-
-            lastAttackTime = Time.time;
-            currentAction = CombatAction.Attack;
-
-            // Pick attack type
-            bool isHeavy = Random.value < 0.3f;
-            string trigger = isHeavy ? "HeavyAttack" : "LightAttack";
-            animator.SetTrigger(trigger);
-
-            // Start the physical movement (Lunge)
-            StartCoroutine(AttackLungeRoutine());
-        }
-
-        private System.Collections.IEnumerator AttackLungeRoutine(){
-            isLunging = true;
-            agent.isStopped = true; // Stop NavMesh from fighting our manual movement
-
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = transform.position + transform.forward * lungeDistance;
-
-            // 1. Lunge Forward (Wind-up to Hit)
-            float elapsed = 0;
-            while(elapsed < 0.2f) // Fast snap forward (adjust time to match animation)
+            for (int i = 0; i < nearbyEnemies.Length; i++)
             {
-                transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * lungeSpeed);
-                elapsed += Time.deltaTime;
+                Transform other = nearbyEnemies[i]?.transform;
+                if (!other || other == transform) continue;
+
+                Vector3 toOther = other.position - transform.position;
+                float distance = toOther.magnitude;
+
+                if (distance < 1f)
+                    separationVec -= (toOther.normalized * (1f - distance));
+            }
+
+            return separationVec;
+        }
+
+        void MoveWithSeparation(Vector3 targetPos)
+        {
+            Vector3 separation = ComputeSeparation();
+            Vector3 finalPos = targetPos + separation;
+            agent.isStopped = false;
+            agent.SetDestination(finalPos);
+        }
+
+        /* ================= ORBITING ================= */
+
+        void AssignOrbitSlot()
+        {
+            Collider[] enemies = new Collider[20];
+            int count = Physics.OverlapSphereNonAlloc(player.position, orbitDistance + 2f, enemies, enemyMask);
+
+            EnemyController[] enemyControllers = new EnemyController[count];
+            int validCount = 0;
+
+            for (int i = 0; i < count; i++)
+            {
+                EnemyController ec = enemies[i].GetComponent<EnemyController>();
+                if (ec != null)
+                    enemyControllers[validCount++] = ec;
+            }
+
+            if (validCount > 1)
+            {
+                System.Array.Sort(enemyControllers, 0, validCount,
+                    Comparer<EnemyController>.Create((a, b) => a.GetInstanceID().CompareTo(b.GetInstanceID())));
+            }
+
+            orbitSlot = 1;
+            for (int i = 0; i < validCount; i++)
+            {
+                if (enemyControllers[i] == this)
+                {
+                    orbitSlot = i + 1;
+                    break;
+                }
+            }
+        }
+
+        Vector3 CalcOrbitPos()
+        {
+            int totalSlots = 1;
+            Collider[] enemies = new Collider[20];
+            int count = Physics.OverlapSphereNonAlloc(player.position, orbitDistance + 2f, enemies, enemyMask);
+            totalSlots += count;
+
+            float slotAngle = 360f / totalSlots * orbitSlot;
+            orbitAngle += orbitSpeed * Time.deltaTime * strafeDir;
+            float finalAngle = (slotAngle + orbitAngle) % 360f;
+
+            float rad = finalAngle * Mathf.Deg2Rad;
+            Vector3 offset = new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)) * orbitDistance;
+
+            Vector3 targetPos = player.position + offset;
+
+            // Separation
+            targetPos += ComputeSeparation();
+
+            return targetPos;
+        }
+
+        /* ================= ATTACK / DASH ================= */
+
+        void PerformAttack()
+        {
+            if (actionLocked) return;
+
+            actionLocked = true;
+            lastAttackTime = Time.time;
+
+            bool heavy = Random.value < heavyAttackChance;
+            currentDamage = heavy ? heavyDamage : lightDamage;
+
+            animator.SetTrigger(heavy ? "HeavyAttack" : "LightAttack");
+
+            StartCoroutine(AttackRoutine());
+        }
+
+        IEnumerator AttackRoutine()
+        {
+            agent.isStopped = true;
+
+            float t = 0f;
+            while (t < 0.25f)
+            {
+                agent.Move(transform.forward * lungeSpeed * Time.deltaTime + ComputeSeparation() * Time.deltaTime);
+                t += Time.deltaTime;
                 yield return null;
             }
 
-            // Wait slightly for the "Hit" to land (sync with TriggerMeleeDamage)
             yield return new WaitForSeconds(0.3f);
 
-            // 2. Recovery (Move back to original spot)
-            elapsed = 0;
-            while (elapsed < 0.5f){
-                transform.position = Vector3.Lerp(transform.position, startPos, Time.deltaTime * recoverySpeed);
-                elapsed += Time.deltaTime;
+            t = 0;
+            while (t < 0.4f)
+            {
+                agent.Move(-transform.forward * recoverySpeed * Time.deltaTime + ComputeSeparation() * Time.deltaTime);
+                t += Time.deltaTime;
                 yield return null;
             }
 
             agent.isStopped = false;
-            isLunging = false;
-            currentAction = CombatAction.Idle;
+            actionLocked = false;
         }
 
-        public void TriggerMeleeDamage(){
-            float distSq = (player.position - transform.position).sqrMagnitude;
-            if(distSq <= combatRange * combatRange){
-                Debug.Log($"Hit! Type: {(currentDamage > lightDamage ? "Heavy" : "Light")} | Damage: {currentDamage}");
-                // player.GetComponent<IHealth>()?.TakeDamage(currentDamage);
-            }
-        }
-
-        private Vector3 CalculateStrafePosition()
+        void StartDash()
         {
-            CheckForNearbyEnemies();
-            Vector3 offset = Vector3.Cross(Vector3.up, (player.position - transform.position).normalized);
-            return transform.position + (offset * strafeDir * 2f);
+            if (actionLocked) return;
+
+            actionLocked = true;
+            lastDashTime = Time.time;
+
+            float x = Random.value > 0.5f ? 1 : -1;
+            float y = Random.value > 0.5f ? 1 : -1;
+
+            animator.SetFloat("DashX", x);
+            animator.SetFloat("DashY", y);
+            animator.SetTrigger("Dash");
+
+            Vector3 dir = (transform.forward * y + transform.right * x).normalized;
+
+            StartCoroutine(DashRoutine(dir));
         }
 
-        private void CheckForNearbyEnemies()
+        IEnumerator DashRoutine(Vector3 dir)
         {
-            int count = Physics.OverlapSphereNonAlloc(transform.position, checkRadius, nearbyEnemies, enemyMask);
-            for(int i = 0; i < count; i++)
+            agent.isStopped = true;
+
+            float t = 0;
+            while (t < dashDuration)
             {
-                if (nearbyEnemies[i].transform == transform) continue;
-
-                // If an enemy is in our way, flip strafe direction
-                float dot = Vector3.Dot(transform.right, (nearbyEnemies[i].transform.position - transform.position).normalized);
-                if (dot > 0.5f && strafeDir > 0) strafeDir = -1f;
-                else if (dot < -0.5f && strafeDir < 0) strafeDir = 1f;
+                agent.Move(dir * dashForce * Time.deltaTime + ComputeSeparation() * Time.deltaTime);
+                t += Time.deltaTime;
+                yield return null;
             }
+
+            agent.isStopped = false;
+            actionLocked = false;
         }
 
-        private void HandleRotation(){
-            Vector3 lookDir = (player.position - transform.position);
-            lookDir.y = 0;
-            if(lookDir.sqrMagnitude > 0.1f){
-                Quaternion targetRot = Quaternion.LookRotation(lookDir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
-            }
+        /* ================= ROTATION + ANIM ================= */
+
+        void HandleRotation()
+        {
+            Vector3 dir = player.position - transform.position;
+            dir.y = 0;
+            if (dir.sqrMagnitude < 0.01f) return;
+
+            Quaternion target = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, target, rotationSpeed * Time.deltaTime);
         }
 
-        private void UpdateAnimations(){
-            if (!animator) return;
+        void UpdateAnimations()
+        {
+            Vector3 localVel = transform.InverseTransformDirection(agent.velocity);
 
-            // Use desiredVelocity for more responsive animation transitions
-            Vector3 moveVec = agent.velocity;
-
-            // If agent is basically still, use a tiny vector to avoid flickering
-            if (moveVec.sqrMagnitude < 0.1f) moveVec = Vector3.zero;
-
-            // Convert to local space
-            Vector3 localVelocity = transform.InverseTransformDirection(moveVec);
-
-            // Normalize against moveSpeed
-            float x = localVelocity.x / moveSpeed;
-            float z = localVelocity.z / moveSpeed;
-
-            // Apply to Blend Tree
-            animator.SetFloat("MoveX", x, 0.1f, Time.deltaTime);
-            animator.SetFloat("MoveZ", z, 0.1f, Time.deltaTime);
-
-            // Determine if we are moving based on the agent's actual velocity
-            bool isMoving = agent.velocity.sqrMagnitude > 0.1f || isLunging;
-            animator.SetBool("BearRun", isMoving);
+            animator.SetFloat("MoveX", localVel.x / moveSpeed, 0.1f, Time.deltaTime);
+            animator.SetFloat("MoveZ", localVel.z / moveSpeed, 0.1f, Time.deltaTime);
+            animator.SetBool("BearRun", agent.velocity.sqrMagnitude > 0.1f || actionLocked);
         }
 
-        private void ChangeState(EnemyState newState)
+        void ChangeState(EnemyState newState)
         {
             if (currentState == newState) return;
             currentState = newState;
+        }
+
+        public void TriggerMeleeDamage()
+        {
+            float distSq = (player.position - transform.position).sqrMagnitude;
+            if (distSq <= combatRange * combatRange)
+                Debug.Log($"Hit Player for {currentDamage}");
         }
     }
 }

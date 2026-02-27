@@ -137,6 +137,8 @@ namespace FPS
             else{
                 controller.anim.SetInteger(attackIDParam, 0);
                 controller.anim.SetInteger(noHitParam, attackIndex);
+
+                weaponInventory.DestroyWeapon();
             }
 
             //if(hitInfo.transform != null && hitInfo.transform.tag != "Enemy"){

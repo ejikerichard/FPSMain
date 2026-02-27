@@ -2028,32 +2028,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 217392971}
+  agent: {fileID: 0}
   animator: {fileID: 1026891201}
   player: {fileID: 0}
-  moveSpeed: 3.5
+  moveSpeed: 3
   rotationSpeed: 6
   sleepRange: 25
-  personalSpace: 2
-  chaseRange: 12
-  combatRange: 3
-  decisionCooldown: 1.1
-  attackCooldown: 2
-  dashCooldown: 3
-  lightDamage: 10
-  heavyDamage: 25
-  heavyAttackChance: 0.3
-  lungeSpeed: 6
-  recoverySpeed: 3
-  dashForce: 5
-  dashDuration: 0.25
+  personalSpace: 3
+  skirmishDistance: 6
+  circleSpeed: 2
+  flipCooldown: 0.5
+  chaseRange: 10
+  combatRange: 2
+  decisionCooldown: 1.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 3
-  orbitDistance: 3
-  orbitSpeed: 2
-  flipCooldown: 0.5
+  checkRadius: 2
+  damage: 10
+  attackCooldown: 2
+  heavyAttackChance: 0.3
+  lightDamage: 10
+  heavyDamage: 25
+  lungeDistance: 2
+  lungeSpeed: 5
+  recoverySpeed: 5
+  decisionTimer: 0
 --- !u!136 &217392968
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4282,32 +4282,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 449616339}
+  agent: {fileID: 0}
   animator: {fileID: 147629120}
   player: {fileID: 0}
-  moveSpeed: 3.5
+  moveSpeed: 3
   rotationSpeed: 6
   sleepRange: 25
-  personalSpace: 2
-  chaseRange: 12
-  combatRange: 3
-  decisionCooldown: 1.1
-  attackCooldown: 2
-  dashCooldown: 3
-  lightDamage: 10
-  heavyDamage: 25
-  heavyAttackChance: 0.3
-  lungeSpeed: 6
-  recoverySpeed: 3
-  dashForce: 5
-  dashDuration: 0.25
+  personalSpace: 3
+  skirmishDistance: 6
+  circleSpeed: 2
+  flipCooldown: 0.5
+  chaseRange: 10
+  combatRange: 2
+  decisionCooldown: 1.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 3
-  orbitDistance: 3
-  orbitSpeed: 2
-  flipCooldown: 0.5
+  checkRadius: 2
+  damage: 10
+  attackCooldown: 2
+  heavyAttackChance: 0.3
+  lightDamage: 10
+  heavyDamage: 25
+  lungeDistance: 2
+  lungeSpeed: 5
+  recoverySpeed: 5
+  decisionTimer: 0
 --- !u!136 &449616336
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9324,32 +9324,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 957195862}
+  agent: {fileID: 0}
   animator: {fileID: 751178560}
   player: {fileID: 0}
-  moveSpeed: 3.5
+  moveSpeed: 3
   rotationSpeed: 6
   sleepRange: 25
-  personalSpace: 2
-  chaseRange: 12
-  combatRange: 3
-  decisionCooldown: 1.1
-  attackCooldown: 2
-  dashCooldown: 3
-  lightDamage: 10
-  heavyDamage: 25
-  heavyAttackChance: 0.3
-  lungeSpeed: 6
-  recoverySpeed: 3
-  dashForce: 5
-  dashDuration: 0.25
+  personalSpace: 3
+  skirmishDistance: 6
+  circleSpeed: 2
+  flipCooldown: 0.5
+  chaseRange: 10
+  combatRange: 2
+  decisionCooldown: 1.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 3
-  orbitDistance: 3
-  orbitSpeed: 2
-  flipCooldown: 0.5
+  checkRadius: 2
+  damage: 10
+  attackCooldown: 2
+  heavyAttackChance: 0.3
+  lightDamage: 10
+  heavyDamage: 25
+  lungeDistance: 2
+  lungeSpeed: 5
+  recoverySpeed: 5
+  decisionTimer: 0
 --- !u!136 &957195859
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -17914,32 +17914,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 2081390298}
+  agent: {fileID: 0}
   animator: {fileID: 668140757271030481}
   player: {fileID: 0}
-  moveSpeed: 3.5
+  moveSpeed: 3
   rotationSpeed: 6
   sleepRange: 25
-  personalSpace: 2
-  chaseRange: 12
-  combatRange: 3
-  decisionCooldown: 1.1
-  attackCooldown: 2
-  dashCooldown: 3
-  lightDamage: 10
-  heavyDamage: 25
-  heavyAttackChance: 0.3
-  lungeSpeed: 6
-  recoverySpeed: 3
-  dashForce: 5
-  dashDuration: 0.25
+  personalSpace: 3
+  skirmishDistance: 6
+  circleSpeed: 2
+  flipCooldown: 0.5
+  chaseRange: 10
+  combatRange: 2
+  decisionCooldown: 1.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 3
-  orbitDistance: 3
-  orbitSpeed: 2
-  flipCooldown: 0.5
+  checkRadius: 2
+  damage: 10
+  attackCooldown: 2
+  heavyAttackChance: 0.3
+  lightDamage: 10
+  heavyDamage: 25
+  lungeDistance: 2
+  lungeSpeed: 5
+  recoverySpeed: 5
+  decisionTimer: 0
 --- !u!195 &2081390298
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -18405,32 +18405,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeddb7945f415694cbb073959b6d5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPS.EnemyController
-  agent: {fileID: 2124048002}
+  agent: {fileID: 0}
   animator: {fileID: 1621660471}
   player: {fileID: 0}
-  moveSpeed: 3.5
+  moveSpeed: 1
   rotationSpeed: 6
   sleepRange: 25
-  personalSpace: 2
-  chaseRange: 12
-  combatRange: 3
-  decisionCooldown: 1.1
-  attackCooldown: 2
-  dashCooldown: 3
-  lightDamage: 10
-  heavyDamage: 25
-  heavyAttackChance: 0.3
-  lungeSpeed: 6
-  recoverySpeed: 3
-  dashForce: 5
-  dashDuration: 0.25
+  personalSpace: 3
+  skirmishDistance: 6
+  circleSpeed: 2
+  flipCooldown: 0.5
+  chaseRange: 10
+  combatRange: 2
+  decisionCooldown: 1.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 3
-  orbitDistance: 3
-  orbitSpeed: 2
-  flipCooldown: 0.5
+  checkRadius: 2
+  damage: 10
+  attackCooldown: 2
+  heavyAttackChance: 0.3
+  lightDamage: 10
+  heavyDamage: 25
+  lungeDistance: 2
+  lungeSpeed: 5
+  recoverySpeed: 5
+  decisionTimer: 0
 --- !u!136 &2124047999
 CapsuleCollider:
   m_ObjectHideFlags: 0
