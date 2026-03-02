@@ -2043,14 +2043,14 @@ MonoBehaviour:
   lightDamage: 10
   heavyDamage: 25
   heavyAttackChance: 0.3
-  lungeSpeed: 7
+  lungeSpeed: 6
   recoverySpeed: 3
   dashForce: 5
   dashDuration: 0.25
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 5
+  checkRadius: 3
   orbitDistance: 3
   orbitSpeed: 2
   maxHealth: 100
@@ -4298,14 +4298,14 @@ MonoBehaviour:
   lightDamage: 10
   heavyDamage: 25
   heavyAttackChance: 0.3
-  lungeSpeed: 7
+  lungeSpeed: 6
   recoverySpeed: 3
   dashForce: 5
   dashDuration: 0.25
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 5
+  checkRadius: 3
   orbitDistance: 3
   orbitSpeed: 2
   maxHealth: 100
@@ -9341,14 +9341,14 @@ MonoBehaviour:
   lightDamage: 10
   heavyDamage: 25
   heavyAttackChance: 0.3
-  lungeSpeed: 7
+  lungeSpeed: 6
   recoverySpeed: 3
   dashForce: 5
   dashDuration: 0.25
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 5
+  checkRadius: 3
   orbitDistance: 3
   orbitSpeed: 2
   maxHealth: 100
@@ -17932,14 +17932,14 @@ MonoBehaviour:
   lightDamage: 10
   heavyDamage: 25
   heavyAttackChance: 0.3
-  lungeSpeed: 7
+  lungeSpeed: 6
   recoverySpeed: 3
   dashForce: 5
   dashDuration: 0.25
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 5
+  checkRadius: 3
   orbitDistance: 3
   orbitSpeed: 2
   maxHealth: 100
@@ -18424,14 +18424,14 @@ MonoBehaviour:
   lightDamage: 10
   heavyDamage: 25
   heavyAttackChance: 0.3
-  lungeSpeed: 7
+  lungeSpeed: 6
   recoverySpeed: 3
   dashForce: 5
   dashDuration: 0.25
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  checkRadius: 5
+  checkRadius: 3
   orbitDistance: 3
   orbitSpeed: 2
   maxHealth: 100

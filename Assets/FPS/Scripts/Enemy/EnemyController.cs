@@ -76,6 +76,7 @@ namespace FPS
 
         private float orbitAngle; // internal angle for smooth orbit
         private int orbitSlot;
+        private float personalCombatRange;
 
         private Collider[] nearbyEnemies = new Collider[20];
 
@@ -87,9 +88,15 @@ namespace FPS
 
             agent.updateRotation = false;
             agent.speed = moveSpeed;
-            agent.avoidancePriority = Random.Range(0, 99);
 
-            currentHealth = maxHealth; // Initialize health
+            // IMPORTANT — makes avoidance actually work
+            agent.obstacleAvoidanceType =
+                ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+
+            agent.avoidancePriority = Random.Range(0, 99);
+            agent.radius = 0.45f;
+
+            currentHealth = maxHealth;
         }
 
         void Start()
@@ -101,6 +108,8 @@ namespace FPS
 
             float angle = Random.Range(0, 360) * Mathf.Deg2Rad;
             targetOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * personalSpace;
+
+            personalCombatRange = combatRange + Random.Range(-0.8f, 1.2f);
         }
 
         /* ===================================================== */
@@ -120,10 +129,11 @@ namespace FPS
                 HandleStateTransitions(distSq);
 
             HandleRotation();
+            ApplySeparationVelocity();
             UpdateAnimations();
 
             // Update orbit slot occasionally for multi-enemy formation
-            if (currentState == EnemyState.Combat && Time.frameCount % 20 == 0)
+            if (currentState == EnemyState.Combat && Time.frameCount % 60 == 0)
                 AssignOrbitSlot();
 
             // Update nearby enemies for separation
@@ -136,7 +146,7 @@ namespace FPS
         void HandleStateTransitions(float distSq)
         {
             float chaseSq = chaseRange * chaseRange;
-            float combatSq = combatRange * combatRange;
+            float combatSq = personalCombatRange * personalCombatRange;
 
             if (distSq > chaseSq)
                 ChangeState(EnemyState.Idle);
@@ -158,12 +168,22 @@ namespace FPS
 
                 case EnemyState.Chase:
                     agent.isStopped = false;
+                    agent.autoBraking = false;
                     agent.stoppingDistance = 0.5f;
-                    MoveWithSeparation(player.position + targetOffset);
+
+                    Vector3 dirToEnemy =
+                        (transform.position - player.position).normalized;
+
+                    Vector3 dynamicOffset =
+                        dirToEnemy * personalSpace;
+
+                    MoveWithSeparation(player.position + dynamicOffset);
+
                     decisionTimer = 0;
                     break;
 
                 case EnemyState.Combat:
+                    agent.stoppingDistance = personalCombatRange * 0.9f;
                     CombatLogic();
                     break;
             }
@@ -192,7 +212,7 @@ namespace FPS
             bool canAttack = Time.time > lastAttackTime + attackCooldown;
             bool canDash = Time.time > lastDashTime + dashCooldown;
 
-            if (distance <= combatRange * 0.85f && canAttack)
+            if( distance <= personalCombatRange * 0.85f && canAttack)
             {
                 currentAction = roll < 0.7f ? CombatAction.Attack : CombatAction.Strafe;
                 return;
@@ -229,7 +249,7 @@ namespace FPS
 
                 case CombatAction.StepBack:
                     Vector3 retreat = (transform.position - player.position).normalized;
-                    MoveWithSeparation(player.position + retreat * (combatRange + 2f));
+                    MoveWithSeparation(player.position + retreat * (personalCombatRange + 2f));
                     break;
 
                 case CombatAction.Dash:
@@ -246,29 +266,47 @@ namespace FPS
 
         Vector3 ComputeSeparation()
         {
-            Vector3 separationVec = Vector3.zero;
+            Vector3 separation = Vector3.zero;
 
-            for (int i = 0; i < nearbyEnemies.Length; i++)
+            int count = Physics.OverlapSphereNonAlloc(
+                transform.position,
+                checkRadius,
+                nearbyEnemies,
+                enemyMask);
+
+            for (int i = 0; i < count; i++)
             {
-                Transform other = nearbyEnemies[i]?.transform;
+                Transform other = nearbyEnemies[i].transform;
                 if (!other || other == transform) continue;
 
-                Vector3 toOther = other.position - transform.position;
-                float distance = toOther.magnitude;
+                Vector3 away = transform.position - other.position;
+                float dist = away.magnitude;
 
-                if (distance < 1f)
-                    separationVec -= (toOther.normalized * (1f - distance));
+                if (dist > 0.01f)
+                {
+                    // smooth falloff force
+                    float strength = (checkRadius - dist) / checkRadius;
+                    separation += away.normalized * strength;
+                }
             }
 
-            return separationVec;
+            // BIG difference — strong push apart
+            return separation * 2.5f;
         }
-
         void MoveWithSeparation(Vector3 targetPos)
         {
             Vector3 separation = ComputeSeparation();
             Vector3 finalPos = targetPos + separation;
+
             agent.isStopped = false;
-            agent.SetDestination(finalPos);
+
+            // ALWAYS refresh if close or stopped
+            if (!agent.hasPath ||
+                agent.remainingDistance < 0.3f ||
+                Vector3.Distance(agent.destination, finalPos) > 0.5f)
+            {
+                agent.SetDestination(finalPos);
+            }
         }
 
         /* ================= ORBITING ================= */
@@ -276,55 +314,62 @@ namespace FPS
         void AssignOrbitSlot()
         {
             Collider[] enemies = new Collider[20];
-            int count = Physics.OverlapSphereNonAlloc(player.position, orbitDistance + 2f, enemies, enemyMask);
 
-            EnemyController[] enemyControllers = new EnemyController[count];
-            int validCount = 0;
+            int count = Physics.OverlapSphereNonAlloc(
+                player.position,
+                orbitDistance + 3f,
+                enemies,
+                enemyMask);
+
+            List<EnemyController> list = new List<EnemyController>();
 
             for (int i = 0; i < count; i++)
             {
                 EnemyController ec = enemies[i].GetComponent<EnemyController>();
                 if (ec != null)
-                    enemyControllers[validCount++] = ec;
+                    list.Add(ec);
             }
 
-            if (validCount > 1)
-            {
-                System.Array.Sort(enemyControllers, 0, validCount,
-                    Comparer<EnemyController>.Create((a, b) => a.GetInstanceID().CompareTo(b.GetInstanceID())));
-            }
+            list.Sort((a, b) =>
+                a.GetInstanceID().CompareTo(b.GetInstanceID()));
 
-            orbitSlot = 1;
-            for (int i = 0; i < validCount; i++)
-            {
-                if (enemyControllers[i] == this)
-                {
-                    orbitSlot = i + 1;
-                    break;
-                }
-            }
+            orbitSlot = Mathf.Max(0, list.IndexOf(this));
         }
-
         Vector3 CalcOrbitPos()
         {
-            int totalSlots = 1;
             Collider[] enemies = new Collider[20];
-            int count = Physics.OverlapSphereNonAlloc(player.position, orbitDistance + 2f, enemies, enemyMask);
-            totalSlots += count;
 
-            float slotAngle = 360f / totalSlots * orbitSlot;
+            int count = Physics.OverlapSphereNonAlloc(
+                player.position,
+                orbitDistance + 3f,
+                enemies,
+                enemyMask);
+
+            int totalSlots = Mathf.Max(2, count);;
+
+            float angleStep = 360f / totalSlots;
+
             orbitAngle += orbitSpeed * Time.deltaTime * strafeDir;
-            float finalAngle = (slotAngle + orbitAngle) % 360f;
 
-            float rad = finalAngle * Mathf.Deg2Rad;
-            Vector3 offset = new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)) * orbitDistance;
+            float angle = orbitSlot * angleStep + orbitAngle;
 
-            Vector3 targetPos = player.position + offset;
+            float rad = angle * Mathf.Deg2Rad;
 
-            // Separation
-            targetPos += ComputeSeparation();
+            Vector3 offset =
+                new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad))
+                * personalCombatRange;
 
-            return targetPos;
+            return player.position + offset + ComputeSeparation();
+        }
+
+        void ApplySeparationVelocity()
+        {
+            if (agent.isStopped || !agent.hasPath) return;
+
+            Vector3 separation = ComputeSeparation();
+
+            // steer current velocity instead of repathing
+            agent.Move(separation * 1.2f * Time.deltaTime);
         }
 
         /* ================= ATTACK / DASH ================= */
@@ -435,7 +480,7 @@ namespace FPS
         public void TriggerMeleeDamage()
         {
             float distSq = (player.position - transform.position).sqrMagnitude;
-            if (distSq <= combatRange * combatRange)
+            if (distSq <= personalCombatRange * personalCombatRange)
                 Debug.Log($"Hit Player for {currentDamage}");
         }
         public void TakeDamage(float damage){
