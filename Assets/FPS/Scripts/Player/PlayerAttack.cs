@@ -108,6 +108,8 @@ namespace FPS
         void StartAttack(){
             bool hit = PerformRaycast();
 
+            CameraWobble.Instance.Shake(2.5f);
+
             attackIndex++;
             if (attackIndex > maxCombo)
                 attackIndex = 1;

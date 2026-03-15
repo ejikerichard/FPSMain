@@ -2042,9 +2042,10 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 8
-  raycastDistance: 0.5
+  raycastDistance: 1
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
   circleRadius: 3.5
   enemyMask:
     serializedVersion: 2
@@ -4313,9 +4314,10 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 8
-  raycastDistance: 0.5
+  raycastDistance: 1
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
   circleRadius: 3.5
   enemyMask:
     serializedVersion: 2
@@ -9355,9 +9357,10 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 8
-  raycastDistance: 0.5
+  raycastDistance: 1
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
   circleRadius: 3.5
   enemyMask:
     serializedVersion: 2
@@ -15763,7 +15766,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1734942041}
-  - component: {fileID: 1734942042}
   m_Layer: 0
   m_Name: 'CameraPivot '
   m_TagString: Untagged
@@ -15789,21 +15791,6 @@ Transform:
   - {fileID: 8733665798239454520}
   m_Father: {fileID: 281204827}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1734942042
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734942040}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10d14a685865f1d4b83f631f7d3d6fa6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FPS.CameraWobble
-  shakeAmount: 5
-  shakeSpeed: 25
-  shakeDecay: 15
 --- !u!1 &1747015597
 GameObject:
   m_ObjectHideFlags: 0
@@ -18151,9 +18138,10 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 8
-  raycastDistance: 0.5
+  raycastDistance: 1
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
   circleRadius: 3.5
   enemyMask:
     serializedVersion: 2
@@ -18642,9 +18630,10 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 8
-  raycastDistance: 0.5
+  raycastDistance: 1
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
   circleRadius: 3.5
   enemyMask:
     serializedVersion: 2
