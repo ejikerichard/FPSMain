@@ -17,6 +17,8 @@ namespace FPS
         [Header("Movement")]
         public float moveSpeed = 3.5f;
         public float rotationSpeed = 10f;
+        public float walkSpeed = 2.5f;
+        public float runSpeed = 5.5f;
 
         [Header("Ranges")]
         public float chaseRange = 12f;
@@ -50,6 +52,10 @@ namespace FPS
         int orbitSlot;
         Vector3 combatSlotPosition;
 
+        bool hasAggro;
+        float aggroTimer;
+        float aggroDuration = 5f; // how long enemy remembers player
+
         bool actionLocked;
 
         float decisionTimer;
@@ -82,28 +88,42 @@ namespace FPS
 
         /* ================= UPDATE ================= */
 
-        void Update()
-        {
+        void Update(){
             if (!player || currentState == EnemyState.Dead) return;
 
             float dist = Vector3.Distance(transform.position, player.position);
 
-            if (dist > chaseRange)
+
+            if(dist <= chaseRange){
+                hasAggro = true;
+                aggroTimer = aggroDuration;
+            }
+            else{
+                aggroTimer -= Time.deltaTime;
+
+                if (aggroTimer <= 0)
+                    hasAggro = false;
+            }
+
+    
+            if(!hasAggro){
                 currentState = EnemyState.Idle;
-            else if (dist > combatRange)
+            }
+            else if(dist > combatRange){
                 currentState = EnemyState.Chase;
-            else
+            }else{
                 currentState = EnemyState.Combat;
+            }
 
             RotateToPlayer();
 
-            if (currentState == EnemyState.Combat)
+            if(currentState == EnemyState.Combat)
                 CombatLogic();
 
-            if (currentState == EnemyState.Chase)
+            if(currentState == EnemyState.Chase)
                 UpdateChaseDecision();
 
-            if (currentState == EnemyState.Combat && Time.frameCount % 60 == 0)
+            if(currentState == EnemyState.Combat && Time.frameCount % 60 == 0)
                 AssignOrbitSlot();
         }
 
@@ -190,8 +210,9 @@ namespace FPS
                 moveDir = side * strafeDir;
             }
 
-            Vector3 move =
-                moveDir * moveSpeed * Time.fixedDeltaTime;
+            float speed = runSpeed; // CHASING = RUN
+
+            Vector3 move = moveDir * speed * Time.fixedDeltaTime;
 
             rb.MovePosition(rb.position + move);
 
@@ -278,6 +299,7 @@ namespace FPS
 
         void CombatLogic()
         {
+            float speed = walkSpeed;
             decisionTimer -= Time.deltaTime;
 
             if (decisionTimer > 0 || actionLocked)
@@ -348,7 +370,7 @@ namespace FPS
             Collider[] colliders = Physics.OverlapSphere(transform.position + transform.forward, 3f, hitLayers);
             foreach(Collider col in colliders)
             {
-                col.GetComponent<HealthController>().TakeDamage(damageAmount);
+                col.GetComponent<HealthControl>().TakeDamage(damageAmount);
 
                 Vector3 directionPlayer = (col.transform.position - transform.position).normalized;
                 float dotProduct = Vector3.Dot(transform.forward, directionPlayer);
@@ -406,10 +428,15 @@ namespace FPS
         {
             if (!animator) return;
 
+            float speed = moveDir.magnitude;
+
             Vector3 local = transform.InverseTransformDirection(moveDir);
 
-            animator.SetFloat("MoveX", local.x, 0.15f, Time.deltaTime);
-            animator.SetFloat("MoveZ", local.z, 0.15f, Time.deltaTime);
+            // 🔥 THIS IS THE FIX
+            float animationMultiplier = currentState == EnemyState.Chase ? 2f : 1f;
+
+            animator.SetFloat("MoveX", local.x * animationMultiplier, 0.15f, Time.deltaTime);
+            animator.SetFloat("MoveZ", local.z * animationMultiplier, 0.15f, Time.deltaTime);
 
             animator.SetBool("BearRun", moveDir.sqrMagnitude > 0.0001f);
         }

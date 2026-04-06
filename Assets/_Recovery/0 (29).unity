@@ -2033,6 +2033,8 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 3.5
   rotationSpeed: 10
+  walkSpeed: 2.5
+  runSpeed: 5.5
   chaseRange: 12
   combatRange: 3
   decisionCooldown: 1.1
@@ -4304,6 +4306,8 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 3.5
   rotationSpeed: 10
+  walkSpeed: 2.5
+  runSpeed: 5.5
   chaseRange: 12
   combatRange: 3
   decisionCooldown: 1.1
@@ -9346,6 +9350,8 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 3.5
   rotationSpeed: 10
+  walkSpeed: 2.5
+  runSpeed: 5.5
   chaseRange: 12
   combatRange: 3
   decisionCooldown: 1.1
@@ -18142,6 +18148,8 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 3.5
   rotationSpeed: 10
+  walkSpeed: 2.5
+  runSpeed: 5.5
   chaseRange: 12
   combatRange: 3
   decisionCooldown: 1.1
@@ -18633,6 +18641,8 @@ MonoBehaviour:
   player: {fileID: 0}
   moveSpeed: 3.5
   rotationSpeed: 10
+  walkSpeed: 2.5
+  runSpeed: 5.5
   chaseRange: 12
   combatRange: 3
   decisionCooldown: 1.1
