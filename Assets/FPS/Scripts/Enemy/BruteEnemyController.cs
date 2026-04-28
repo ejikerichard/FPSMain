@@ -119,6 +119,12 @@ namespace FPS {
         private void Update()
         {
             UpdateAnimations(rb.linearVelocity);
+
+            //if(animator.GetCurrentAnimatorStateInfo(0).IsTag("Idle")){
+            //    animator.applyRootMotion = true;
+            //}else{
+            //    animator.applyRootMotion = false;
+            //}
         }
 
         void FixedUpdate(){
@@ -203,6 +209,11 @@ namespace FPS {
 
         void ChasePlayer(float distance)
         {
+            if (currentAction == AttackAction.Dodge || currentAction == AttackAction.Dash || currentAction == AttackAction.Attack)
+            {
+                return;
+            }
+
             chaseDecisionTimer += Time.deltaTime;
             if (chaseDecisionTimer >= chaseDecisionInterval)
             {
@@ -224,39 +235,35 @@ namespace FPS {
             }
             else
             {
-                // FLANKER LOGIC: Move outside player FOV to get behind
-                // 1. Calculate a point far to the side to "exit" the screen
-                Vector3 sideStepDir = Quaternion.Euler(0, slotAngle, 0) * player.forward;
-                Vector3 wideFlankPoint = player.position + (sideStepDir * surroundDistance * 2f);
+                Vector3 toPlayerFlat = (player.position - transform.position);
+                toPlayerFlat.y = 0;
 
-                // 2. Calculate the target point behind the player
-                Vector3 behindPoint = player.position - (player.forward * surroundDistance);
+                float dist = toPlayerFlat.magnitude;
 
-                // 3. Determine if we are still "in front" of the player
-                float dotProduct = Vector3.Dot(player.forward, (transform.position - player.position).normalized);
-
-                if (dotProduct > 0.2f) // We are still in the player's front arc
+                if (dist <= attackRange * 1.4f)
                 {
-                    // Move wide to the side to disappear from screen
-                    moveDir = (wideFlankPoint - transform.position).normalized;
+                    moveDir = toPlayerFlat.normalized;
                 }
                 else
                 {
-                    // We are successfully to the side/back, now close in on the behind point
-                    moveDir = (behindPoint - transform.position).normalized;
+                    
+                    Vector3 sideDir = Quaternion.Euler(0, slotAngle, 0) * player.forward;
+                    Vector3 flankPos = player.position + sideDir * surroundDistance;
+
+                    moveDir = (flankPos - transform.position).normalized;
                 }
             }
 
             // Apply movement and rotation
             Vector3 separation = GetSeparationDir();
-            Vector3 finalDir = (moveDir + separation * 2f).normalized;
+            Vector3 finalDir = (moveDir + separation * 0.5f).normalized;
             finalDir = ApplyAvoidance(finalDir);
 
             MoveTowards(finalDir, currentChaseSpeed);
             RotateTowards(dirToPlayer); // Still face player while flanking
 
             // Transition to Attack
-            if (distance <= attackRange)
+           if (distance <= attackRange * 1.4f)
             {
                 rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
 
@@ -276,72 +283,72 @@ namespace FPS {
 
         void MoveTowards(Vector3 dir, float speed)
         {
-            Vector3 targetVelocity = dir * speed;
-            Vector3 velocity = rb.linearVelocity;
-            Vector3 velocityChange = targetVelocity - new Vector3(velocity.x, 0, velocity.z);
-
-            velocityChange = Vector3.ClampMagnitude(velocityChange, acceleration * Time.fixedDeltaTime);
-            rb.AddForce(velocityChange, ForceMode.VelocityChange);
+            ApplyMovementForce(dir * speed);
         }
-
 
         void AttackPlayer(float distance)
         {
+            // 🔥 DO NOT override movement during dash/dodge
+            if (currentAction == AttackAction.Dodge || currentAction == AttackAction.Dash || currentAction == AttackAction.Attack)
+            {
+                PerformAction();
+                return;
+            }
+
             Vector3 dirToPlayer = (player.position - transform.position);
-            dirToPlayer.y = 0; // Keep it on the horizontal plane
+            dirToPlayer.y = 0;
 
             if (dirToPlayer != Vector3.zero)
             {
                 RotateTowards(dirToPlayer.normalized);
             }
 
+            // Exit attack if player too far
+            if (distance > attackRange * 1.6f)
+            {
+                currentAction = AttackAction.None;
+                isPerformingAction = false;
+                hasWaitFinished = false;
+                attackDelayTimer = 0f;
+                currentState = State.Chase;
+                return;
+            }
 
+            // Stop movement
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+
+            // Small separation adjustment (but not too strong)
+            Vector3 separation = GetSeparationDir();
+            // 🔥 Only separate if TOO close
+            if (distance < attackRange * 0.7f)
+            {
+                ApplyMovementForce(separation * 0.5f);
+            }
+
+            // Initial delay before first action
+            if (!hasWaitFinished)
+            {
+                attackDelayTimer += Time.fixedDeltaTime;
+
+                if (attackDelayTimer >= initialAttackDelay)
+                {
+                    hasWaitFinished = true;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // 🔥 CRITICAL FIX: ALWAYS ensure action starts
             if (!isPerformingAction)
             {
-       
-                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-
-
-                if (distance > attackRange)
-                {
-                    currentAction = AttackAction.None;
-                    hasWaitFinished = false;
-                    attackDelayTimer = 0f;
-                    currentState = State.Chase;
-                    return;
-                }
-
-                Vector3 separation = GetSeparationDir();
-
-                Vector3 targetVel = (separation != Vector3.zero) ? separation * 1.5f : Vector3.zero;
-                ApplyMovementForce(targetVel);
-
-
-                if (!hasWaitFinished)
-                {
-                    attackDelayTimer += Time.fixedDeltaTime;
-                    if(attackDelayTimer >= initialAttackDelay)
-                    {
-                        hasWaitFinished = true;
-                    }
-
-                    return;
-                }
-
-                if (AreBothSidesBlocked())
-                {
-                    currentAction = AttackAction.Idle;
-                    actionDuration = 0.5f;
-                    isPerformingAction = true;
-                    return;
-                }
-
                 PickNewAction();
             }
 
+            // Perform current action
             PerformAction();
         }
-
         void PerformAction()
         {
             if (currentAction == AttackAction.None) return;
@@ -357,7 +364,6 @@ namespace FPS {
                     Dash();
                     break;
                 case AttackAction.Strafe:
-                    Strafe();
                     break;
             }
 
@@ -411,38 +417,30 @@ namespace FPS {
         {
             if (actionApplied) return;
 
-            float dir = (Random.value > 0.5f) ? 1f : -1f;
-
-            dir = GetValidStrafeDirection(dir);
-
-            if(dir == 0f){
-                currentAction = AttackAction.Idle;
-                return;
-            }
-
             actionApplied = true;
 
-            Vector3 forceDir = transform.right * dir;
+            float dir = (Random.value > 0.5f) ? 1f : -1f;
 
             animator.CrossFadeInFixedTime("Dodge", 0.1f);
             animator.SetFloat("DodgeVelocity", dir);
 
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-            rb.linearVelocity = transform.right * dir * dodgeForce + Vector3.up * rb.linearVelocity.y;
+            Vector3 dodgeDir = transform.right * dir;
+
+            // 🔥 STRONG impulse
+            rb.linearVelocity = new Vector3(dodgeDir.x * dodgeForce, rb.linearVelocity.y, dodgeDir.z * dodgeForce);
         }
 
-        void Dash(){
+        void Dash()
+        {
             if (actionApplied) return;
 
             actionApplied = true;
 
-            Vector3 dashDir = -transform.forward;
-
             animator.CrossFadeInFixedTime("Dash", 0.1f);
 
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+            Vector3 dashDir = -transform.forward;
 
-            rb.AddForce(dashDir * dashForce, ForceMode.VelocityChange);
+            rb.linearVelocity = new Vector3(dashDir.x * dashForce, rb.linearVelocity.y, dashDir.z * dashForce);
         }
 
         void PickNewAction()
@@ -519,7 +517,7 @@ namespace FPS {
             animator.CrossFadeInFixedTime(randomAttack, 0.1f);
 
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-            rb.AddForce(transform.forward * attackForwardPush, ForceMode.VelocityChange);
+            rb.linearVelocity = transform.forward * attackForwardPush + Vector3.up * rb.linearVelocity.y;
 
             PerformRayCast();
 
@@ -645,24 +643,16 @@ namespace FPS {
 
         void ApplyMovementForce(Vector3 targetVelocity)
         {
-            void ApplyMovementForce(Vector3 targetVelocity)
-            {
-                Vector3 currentVel = rb.linearVelocity;
+            // 🔥 DO NOT override movement during dash/dodge
+            if (currentAction == AttackAction.Dodge || currentAction == AttackAction.Dash || currentAction == AttackAction.Attack)
+                return;
 
-                Vector3 desired = new Vector3(targetVelocity.x, 0, targetVelocity.z);
-                Vector3 current = new Vector3(currentVel.x, 0, currentVel.z);
+            Vector3 current = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            Vector3 target = new Vector3(targetVelocity.x, 0, targetVelocity.z);
 
-              
-                Vector3 smoothed = Vector3.Lerp(current, desired, 6f * Time.fixedDeltaTime);
+            Vector3 smoothed = Vector3.Lerp(current, target, 8f * Time.fixedDeltaTime);
 
-                rb.linearVelocity = new Vector3(smoothed.x, rb.linearVelocity.y, smoothed.z);
-
-                
-                if (desired.sqrMagnitude < 0.01f)
-                {
-                    rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
-                }
-            }
+            rb.linearVelocity = new Vector3(smoothed.x, rb.linearVelocity.y, smoothed.z);
         }
 
         void RotateTowards(Vector3 dir)

@@ -330,7 +330,6 @@ GameObject:
   m_Component:
   - component: {fileID: 19955224}
   - component: {fileID: 19955223}
-  - component: {fileID: 19955225}
   - component: {fileID: 19955222}
   - component: {fileID: 19955221}
   m_Layer: 7
@@ -357,7 +356,7 @@ MonoBehaviour:
   flankerChance: 0.5
   player: {fileID: 0}
   rb: {fileID: 0}
-  animator: {fileID: 19955225}
+  animator: {fileID: 1368687123}
   detectionRange: 15
   attackRange: 2.5
   chaseDecisionInterval: 1.5
@@ -373,7 +372,7 @@ MonoBehaviour:
   attackAnimations:
   - Attack1
   - Attack2
-  attackCooldown: 0.9
+  attackCooldown: 0.8
   hitLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -459,28 +458,6 @@ Transform:
   - {fileID: 1368687124}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!95 &19955225
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 19955220}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
-  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &25713685
 GameObject:
   m_ObjectHideFlags: 0
@@ -805,7 +782,6 @@ GameObject:
   m_Component:
   - component: {fileID: 48820244}
   - component: {fileID: 48820243}
-  - component: {fileID: 48820245}
   - component: {fileID: 48820242}
   - component: {fileID: 48820241}
   m_Layer: 7
@@ -832,7 +808,7 @@ MonoBehaviour:
   flankerChance: 0.5
   player: {fileID: 0}
   rb: {fileID: 0}
-  animator: {fileID: 48820245}
+  animator: {fileID: 243858543}
   detectionRange: 15
   attackRange: 2.5
   chaseDecisionInterval: 1.5
@@ -848,7 +824,7 @@ MonoBehaviour:
   attackAnimations:
   - Attack1
   - Attack2
-  attackCooldown: 0.9
+  attackCooldown: 0.8
   hitLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -934,28 +910,6 @@ Transform:
   - {fileID: 243858544}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!95 &48820245
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 48820240}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
-  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &48986290
 GameObject:
   m_ObjectHideFlags: 0
@@ -2931,6 +2885,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 243858544}
+  - component: {fileID: 243858543}
   m_Layer: 0
   m_Name: brute enemy
   m_TagString: Untagged
@@ -2938,6 +2893,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!95 &243858543
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243858542}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
+  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &243858544
 Transform:
   m_ObjectHideFlags: 0
@@ -10134,6 +10111,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 885747418}
+  - component: {fileID: 885747417}
   m_Layer: 0
   m_Name: brute enemy
   m_TagString: Untagged
@@ -10141,6 +10119,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!95 &885747417
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 885747416}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
+  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &885747418
 Transform:
   m_ObjectHideFlags: 0
@@ -14410,7 +14410,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1303253132}
   - component: {fileID: 1303253133}
-  - component: {fileID: 1303253136}
   - component: {fileID: 1303253134}
   - component: {fileID: 1303253135}
   m_Layer: 7
@@ -14503,7 +14502,7 @@ MonoBehaviour:
   flankerChance: 0.5
   player: {fileID: 0}
   rb: {fileID: 0}
-  animator: {fileID: 1303253136}
+  animator: {fileID: 3031037598662210726}
   detectionRange: 15
   attackRange: 2.5
   chaseDecisionInterval: 1.5
@@ -14519,11 +14518,11 @@ MonoBehaviour:
   attackAnimations:
   - Attack1
   - Attack2
-  attackCooldown: 0.9
+  attackCooldown: 0.8
   hitLayer:
     serializedVersion: 2
     m_Bits: 8
-  attackForwardPush: 4
+  attackForwardPush: 3
   dashForce: 5
   dodgeForce: 7
   strafeSpeed: 3
@@ -14539,28 +14538,6 @@ MonoBehaviour:
   surroundDistance: 7
   initialAttackDelay: 1
   strafeLockDuration: 0.5
---- !u!95 &1303253136
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1303253131}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
-  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1305041702
 GameObject:
   m_ObjectHideFlags: 0
@@ -15063,6 +15040,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1368687124}
+  - component: {fileID: 1368687123}
   m_Layer: 0
   m_Name: brute enemy
   m_TagString: Untagged
@@ -15070,6 +15048,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!95 &1368687123
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1368687122}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
+  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &1368687124
 Transform:
   m_ObjectHideFlags: 0
@@ -18046,7 +18046,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1641915429}
   - component: {fileID: 1641915428}
-  - component: {fileID: 1641915430}
   - component: {fileID: 1641915427}
   - component: {fileID: 1641915426}
   m_Layer: 7
@@ -18073,7 +18072,7 @@ MonoBehaviour:
   flankerChance: 0.5
   player: {fileID: 0}
   rb: {fileID: 0}
-  animator: {fileID: 1641915430}
+  animator: {fileID: 885747417}
   detectionRange: 15
   attackRange: 2.5
   chaseDecisionInterval: 1.5
@@ -18089,7 +18088,7 @@ MonoBehaviour:
   attackAnimations:
   - Attack1
   - Attack2
-  attackCooldown: 0.9
+  attackCooldown: 0.8
   hitLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -18175,28 +18174,6 @@ Transform:
   - {fileID: 885747418}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!95 &1641915430
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1641915425}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
-  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1644728529
 GameObject:
   m_ObjectHideFlags: 0
@@ -25627,6 +25604,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!95 &3031037598662210726
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8627653179859842150}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 4d9ddf71ca228844b84d5906d0fc2d69, type: 3}
+  m_Controller: {fileID: 9100000, guid: e6e49185f12e8324b817bf5b49520aa4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &3051543834110893919
 Transform:
   m_ObjectHideFlags: 0
@@ -29632,6 +29631,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9002770935360581340}
+  - component: {fileID: 3031037598662210726}
   m_Layer: 0
   m_Name: brute enemy
   m_TagString: Untagged
