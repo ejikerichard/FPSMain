@@ -58,13 +58,13 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: RunStop
-  m_Speed: 1
+  m_Speed: 0.8
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1462146434009170418}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
+  m_IKOnFeet: 1
   m_WriteDefaultValues: 1
   m_Mirror: 0
   m_SpeedParameterActive: 0
@@ -223,14 +223,6 @@ BlendTree:
   m_Name: Locomotion
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: 5400024457953382031, guid: ca75fa4ed69338948b471f27603077dc, type: 3}
-    m_Threshold: -1
-    m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0
-    m_DirectBlendParameter: MoveX
-    m_Mirror: 0
-  - serializedVersion: 2
     m_Motion: {fileID: -4475814202968387479, guid: 4f20d15cdceab9540a0f591244c1d0d5, type: 3}
     m_Threshold: -0.5
     m_Position: {x: 0, y: -0.5}
@@ -288,7 +280,7 @@ BlendTree:
     m_Mirror: 0
   m_BlendParameter: MoveX
   m_BlendParameterY: MoveY
-  m_MinThreshold: -1
+  m_MinThreshold: -0.5
   m_MaxThreshold: 3
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
@@ -581,9 +573,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
+  m_TransitionDuration: 0.400877
   m_TransitionOffset: 0
-  m_ExitTime: 0.7159091
+  m_ExitTime: 0.93968517
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
