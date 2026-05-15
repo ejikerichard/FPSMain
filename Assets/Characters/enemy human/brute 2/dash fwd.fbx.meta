@@ -50,7 +50,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: take_001_v_01d_2s_dodge_forward_02
+      name: DashFwd
       takeName: take_001_v_01d_2s_dodge_forward_02
       internalID: 6564575366201729741
       firstFrame: 0
