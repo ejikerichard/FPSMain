@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 
 public class EnemyAnimatorSync : MonoBehaviour
 {
@@ -34,8 +35,10 @@ public class EnemyAnimatorSync : MonoBehaviour
         allowLocomotion = enabled;
     }
 
-    public void PlayIdle(){
+    public void PlayIdle(int index = 0)
+    {
         useRootMotion = false;
+        anim.SetInteger("RandIdle", index);
         anim.SetBool("Run", false);
     }
 
@@ -52,6 +55,7 @@ public class EnemyAnimatorSync : MonoBehaviour
         lastAttack = index;
 
         anim.CrossFade(attackAnimations[index], 0.1f);
+       
     }
 
     public void PlayRecover(){
@@ -72,6 +76,18 @@ public class EnemyAnimatorSync : MonoBehaviour
     }
     public void PlayDashForward(){
         anim.CrossFade("DashFwd", 0.1f);
+    }
+    public void PlayTaunt(int index){
+        if (index <= 0)
+            anim.CrossFade("Taunt1", 0.1f);
+        else if (index == 1)
+            anim.CrossFade("Taunt2", 0.1f);
+        if (index == 2)
+            anim.CrossFade("Taunt3", 0.1f);
+    }
+    public void PlayDamage()
+    {
+        anim.CrossFade("hitReact", 0.1f);
     }
 
     public void UpdateMovement(Vector3 velocity, Transform target)
@@ -113,11 +129,14 @@ public class EnemyAnimatorSync : MonoBehaviour
 
     void OnAnimatorMove()
     {
-        if (!useRootMotion) return;
+        if (!useRootMotion)
+        {
+            // Never let the animator push velocity when we're not in a root motion state
+            return;
+        }
 
         Vector3 delta = anim.deltaPosition;
-        delta.y = rb.linearVelocity.y;
-
+        delta.y = 0f;  // don't let root motion fight gravity
         rb.linearVelocity = delta / Time.deltaTime;
     }
 }

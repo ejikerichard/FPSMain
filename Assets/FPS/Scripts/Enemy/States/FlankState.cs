@@ -15,6 +15,13 @@ public class FlankState : IEnemyState
 
     public void Tick()
     {
+
+        if (enemy.isHit)
+        {
+            enemy.SwitchState(new DamageState(enemy));
+            return;
+        }
+
         Vector3 toPlayer = (enemy.player.position - enemy.transform.position).normalized;
 
         Vector3 side = Vector3.Cross(Vector3.up, toPlayer) * enemy.strafeSign;

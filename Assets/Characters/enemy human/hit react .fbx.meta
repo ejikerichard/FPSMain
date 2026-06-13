@@ -52,7 +52,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: TP_DEFLECTED_TO_TD
+      name: hitReact
       takeName: TP_DEFLECTED_TO_TD
       internalID: -3706011720288826294
       firstFrame: 0

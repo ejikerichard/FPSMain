@@ -186,7 +186,7 @@ namespace FPS
                 Instantiate(hitDecalPrefab, hitInfo.point + hitInfo.normal * 0.01f, Quaternion.LookRotation(-hitInfo.normal));
 
             if (hitInfo.transform != null && hitInfo.transform.CompareTag("Enemy"))
-                hitInfo.transform.GetComponent<EnemyController>().TakeDamage(10);
+                hitInfo.transform.GetComponent<EnemyStateMachine>().TakeDamage(10);
         }
     }
 }

@@ -361,10 +361,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4
+  m_Radius: 0.31
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: -0.31, z: 0}
+  m_Center: {x: 0, y: -0.27, z: 0}
 --- !u!4 &19955224
 Transform:
   m_ObjectHideFlags: 0
@@ -469,15 +469,11 @@ MonoBehaviour:
   role: 0
   strafeSign: 0
   player: {fileID: 0}
-  hitLayer:
-    serializedVersion: 2
-    m_Bits: 8
   detectRange: 15
   attackRange: 2.5
   attackCooldown: 1.5
   retreatCooldown: 1.5
   blockCooldown: 0.5
-  isHit: 0
   motor: {fileID: 0}
   anim: {fileID: 0}
   group: {fileID: 0}
@@ -852,10 +848,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4
+  m_Radius: 0.31
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: -0.31, z: 0}
+  m_Center: {x: 0, y: -0.27, z: 0}
 --- !u!4 &48820244
 Transform:
   m_ObjectHideFlags: 0
@@ -960,15 +956,11 @@ MonoBehaviour:
   role: 0
   strafeSign: 0
   player: {fileID: 0}
-  hitLayer:
-    serializedVersion: 2
-    m_Bits: 8
   detectRange: 15
   attackRange: 2.5
   attackCooldown: 1.5
   retreatCooldown: 1.5
   blockCooldown: 0.5
-  isHit: 0
   motor: {fileID: 0}
   anim: {fileID: 0}
   group: {fileID: 0}
@@ -14489,10 +14481,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4
+  m_Radius: 0.31
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: -0.31, z: 0}
+  m_Center: {x: 0, y: -0.27, z: 0}
 --- !u!95 &1303253136
 Animator:
   serializedVersion: 7
@@ -14597,15 +14589,11 @@ MonoBehaviour:
   role: 0
   strafeSign: 0
   player: {fileID: 0}
-  hitLayer:
-    serializedVersion: 2
-    m_Bits: 8
   detectRange: 15
   attackRange: 2.5
   attackCooldown: 1.5
   retreatCooldown: 1.5
   blockCooldown: 0.5
-  isHit: 0
   motor: {fileID: 0}
   anim: {fileID: 0}
   group: {fileID: 0}
@@ -18125,10 +18113,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4
+  m_Radius: 0.31
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: -0.31, z: 0}
+  m_Center: {x: 0, y: -0.27, z: 0}
 --- !u!4 &1641915429
 Transform:
   m_ObjectHideFlags: 0
@@ -18233,15 +18221,11 @@ MonoBehaviour:
   role: 0
   strafeSign: 0
   player: {fileID: 0}
-  hitLayer:
-    serializedVersion: 2
-    m_Bits: 8
   detectRange: 15
   attackRange: 2.5
   attackCooldown: 1.5
   retreatCooldown: 1.5
   blockCooldown: 0.5
-  isHit: 0
   motor: {fileID: 0}
   anim: {fileID: 0}
   group: {fileID: 0}

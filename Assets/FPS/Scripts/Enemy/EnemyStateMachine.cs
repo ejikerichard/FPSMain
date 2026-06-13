@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
 public class EnemyStateMachine : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class EnemyStateMachine : MonoBehaviour
     public float strafeSign;
 
     public Transform player;
+    public LayerMask hitLayer;
     public float detectRange = 15f;
     public float attackRange = 2.5f;
 
@@ -22,12 +25,17 @@ public class EnemyStateMachine : MonoBehaviour
     private float lastRetreatTime = -999f;
 
     private float stateLockTimer;
+    private float damageAmount = 10f;
 
     public float blockCooldown = 0.5f;
     private float lastBlockTime = -999f;
 
     private float decisionTimer;
     private Vector3 currentMoveDir;
+
+    private float currentHealth = 100f;
+
+    public bool isHit = false;
 
     public EnemyMotor motor;
     public EnemyAnimatorSync anim;
@@ -128,5 +136,37 @@ public class EnemyStateMachine : MonoBehaviour
     public void LockState(float time)
     {
         stateLockTimer = Time.time + time;
+    }
+    public void PerformRaycast()
+    {
+        //Collider[] colliders = Physics.OverlapSphere(transform.position + transform.forward, 3f, hitLayer);
+        //foreach (Collider col in colliders)
+        //{
+        //    col.GetComponent<HealthControl>().TakeDamage(damageAmount);
+
+        //    //Vector3 directionPlayer = (col.transform.position - transform.position).normalized;
+        //    //float dotProduct = Vector3.Dot(transform.forward, directionPlayer);
+        //    //if (dotProduct > angleThreshold)
+        //    //{
+        //    //    Vector3 pushdir = (transform.position - col.transform.position).normalized;
+
+        //    //    col.GetComponent<Rigidbody>().AddForce(pushdir * 10f, ForceMode.Impulse);
+        //    //}
+        //    Debug.Log("Player hit for " + damageAmount + " damage!");
+        //}
+    }
+
+    public void TakeDamage(float amount)
+    {
+        if(currentHealth <= 0f)
+            return;
+
+        currentHealth -= amount;
+        isHit = true;
+        Debug.Log("Enemy took " + amount + " damage! Current health: " + currentHealth);
+        if (currentHealth <= 0f)
+        {
+           // Die();
+        }
     }
 }

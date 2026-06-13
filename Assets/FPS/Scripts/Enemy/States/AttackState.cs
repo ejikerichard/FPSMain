@@ -11,20 +11,23 @@ public class AttackState : IEnemyState
 
     public void Enter()
     {
+        enemy.anim.useRootMotion = false;  // disable until PlayAttack sets it
         enemy.motor.Stop();
         enemy.SetMoveDirection(Vector3.zero);
-
         enemy.anim.SetLocomotion(false);
-
-
         enemy.anim.ForceStopMovement();
-
-        enemy.anim.PlayAttack();
+        enemy.anim.PlayAttack();  // this sets useRootMotion = true
         enemy.SetAttackTime();
     }
 
     public void Tick()
     {
+        if (enemy.isHit)
+        {
+            enemy.SwitchState(new DamageState(enemy));
+            return;
+        }
+
         enemy.motor.LookAtTarget(enemy.player.position, 2f);
 
         if (!enemy.anim.IsAnimationFinished()) return;

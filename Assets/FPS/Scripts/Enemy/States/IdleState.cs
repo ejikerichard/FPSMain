@@ -11,12 +11,20 @@ public class IdleState : IEnemyState
     public void Enter()
     {
         enemy.anim.SetLocomotion(false);
-        enemy.anim.PlayIdle();
         enemy.motor.Stop();
-    }
 
+        int randomIdle = Random.Range(0, 2);
+        enemy.anim.PlayIdle(randomIdle);
+    }
     public void Tick()
     {
+        if (enemy.isHit)
+        {
+            enemy.SwitchState(new DamageState(enemy));
+            return;
+        }
+
+
         if (enemy.DistanceToPlayer() < enemy.detectRange)
         {
             // 🎲 50/50 role

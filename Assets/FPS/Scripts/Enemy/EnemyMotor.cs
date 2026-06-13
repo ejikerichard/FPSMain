@@ -40,12 +40,18 @@ public class EnemyMotor : MonoBehaviour
     // Last resolved direction — used for animation, not smoothed
     private Vector3 lastResolvedDir = Vector3.zero;
 
+    private bool explicitStopRequested = false;
+
+    private float noRequestTimer = 0f;
+    private const float NO_REQUEST_TIMEOUT = 0.1f; // ~6 physics frames at 50Hz
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.linearDamping = 15f;       // kills residual velocity within one frame
+        rb.angularDamping = 15f;
     }
-
     public void MoveTo(Vector3 pos)
     {
         isStrafing = false;
@@ -58,6 +64,7 @@ public class EnemyMotor : MonoBehaviour
         hasTarget = false;
         isStrafing = false;
         hasMoveRequest = false;
+        explicitStopRequested = false;
         requestedDir = Vector3.zero;
         lastResolvedDir = Vector3.zero;
         committedSteerDir = Vector3.zero;
@@ -65,7 +72,12 @@ public class EnemyMotor : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        GetComponent<EnemyAnimatorSync>()?.UpdateMovement(Vector3.zero, player);
+        var animSync = GetComponent<EnemyAnimatorSync>();
+        if (animSync != null)
+        {
+            animSync.useRootMotion = false;  // ← kills OnAnimatorMove sliding
+            animSync.UpdateMovement(Vector3.zero, player);
+        }
     }
 
     public void Dash(Vector3 direction, float force, float duration)
@@ -92,17 +104,22 @@ public class EnemyMotor : MonoBehaviour
     public Vector3 GetVelocity() => rb.linearVelocity;
     public bool HasTarget() => hasTarget;
 
-    /// <summary>
-    /// Called from ChaseState.Tick() (Update). Just stores the request.
-    /// Actual movement is applied in FixedUpdate so timing is consistent.
-    /// </summary>
+
     public void MoveDirection(Vector3 desiredDir)
     {
         desiredDir.y = 0;
-        requestedDir = desiredDir.sqrMagnitude > 0.01f ? desiredDir.normalized : Vector3.zero;
+        if (desiredDir.sqrMagnitude > 0.01f)
+        {
+            requestedDir = desiredDir.normalized;
+            explicitStopRequested = false;
+        }
+        else
+        {
+            requestedDir = Vector3.zero;
+            explicitStopRequested = true;
+        }
         hasMoveRequest = true;
     }
-
     void FixedUpdate()
     {
         var anim = GetComponent<EnemyAnimatorSync>();
@@ -114,35 +131,57 @@ public class EnemyMotor : MonoBehaviour
             return;
         }
 
-        // Decay steer hold timer
         if (steerHoldTimer > 0f)
             steerHoldTimer -= Time.fixedDeltaTime;
 
-        Vector3 targetDir = Vector3.zero;
-
-        if (hasMoveRequest && requestedDir.sqrMagnitude > 0.01f)
+        if (hasMoveRequest)
         {
-            targetDir = ResolveDirection(requestedDir);
+            noRequestTimer = 0f; // reset timeout on any request
+
+            if (explicitStopRequested)
+            {
+                lastResolvedDir = Vector3.zero;
+                committedSteerDir = Vector3.zero;
+                steerHoldTimer = 0f;
+            }
+            else if (requestedDir.sqrMagnitude > 0.01f)
+            {
+                lastResolvedDir = ResolveDirection(requestedDir);
+            }
+
+            hasMoveRequest = false;
+            explicitStopRequested = false;
         }
         else
         {
-            // No movement requested — stop immediately
-            committedSteerDir = Vector3.zero;
+            // No request this frame — count up
+            noRequestTimer += Time.fixedDeltaTime;
+
+            // If no state has called MoveDirection for 2+ physics frames,
+            // the state machine is idle/transitioning — stop rather than slide
+            if (noRequestTimer >= NO_REQUEST_TIMEOUT)
+            {
+                lastResolvedDir = Vector3.zero;
+                committedSteerDir = Vector3.zero;
+            }
         }
+        // No hasMoveRequest → lastResolvedDir unchanged, enemy keeps moving
 
-        lastResolvedDir = targetDir;
-
-        hasMoveRequest = false;
-
-        // Apply velocity directly — no smoothing, no slide.
-        // Stopping is immediate: velocity is set to 0 when no input.
         LastMoveInput = lastResolvedDir;
 
-        // Base movement velocity
-        Vector3 velocity = lastResolvedDir * moveSpeed;
-        velocity.y = rb.linearVelocity.y;
+        // Replace the stop block:
+        if (lastResolvedDir.sqrMagnitude < 0.01f)
+        {
+            rb.linearVelocity = Vector3.zero;   // hard zero, not just xz
+            rb.angularVelocity = Vector3.zero;
+            anim?.UpdateMovement(Vector3.zero, player);
+            return;
+        }
 
-        // Separation: only push when moving so stationary enemies don't drift
+        Vector3 velocity = lastResolvedDir * moveSpeed;
+        velocity.y = 0f;  // don't preserve y — let gravity work through drag, not manual y copy
+        rb.linearVelocity = velocity;
+
         if (lastResolvedDir.sqrMagnitude > 0.01f)
         {
             Vector3 sep = ComputeSeparation();
@@ -156,12 +195,6 @@ public class EnemyMotor : MonoBehaviour
         anim?.UpdateMovement(localInput, player);
     }
 
-    /// <summary>
-    /// Resolves the final movement direction:
-    /// - If path is clear, use desired direction directly.
-    /// - If blocked, sweep for a free angle and COMMIT to it for MIN_STEER_HOLD seconds.
-    ///   The committed direction won't change until the hold expires, eliminating jitter.
-    /// </summary>
     private Vector3 ResolveDirection(Vector3 desiredDir)
     {
         Vector3 origin = transform.position + Vector3.up * 0.5f;
@@ -172,36 +205,30 @@ public class EnemyMotor : MonoBehaviour
 
         if (!desiredBlocked)
         {
-            // Path clear — release commitment and move freely
+     
             committedSteerDir = Vector3.zero;
             steerHoldTimer = 0f;
             return desiredDir;
         }
 
-        // Path blocked — check if we're still holding a committed direction
+        
         if (steerHoldTimer > 0f && committedSteerDir.sqrMagnitude > 0.01f)
         {
-            // Check committed dir is still actually free; if not, force a re-evaluation
+ 
             bool committedBlocked = Physics.SphereCast(origin, castRadius, committedSteerDir, out _, castDist, enemyLayer);
             if (!committedBlocked)
-                return committedSteerDir; // Keep going the committed way
-            // Committed dir is now blocked too — fall through to re-sweep
+                return committedSteerDir; 
+
         }
 
-        // Sweep for a new free direction
         Vector3 freeDir = SweepForFreeDirection(desiredDir, origin, castRadius, castDist);
 
-        // Commit to it
         committedSteerDir = freeDir;
         steerHoldTimer = MIN_STEER_HOLD;
 
         return freeDir;
     }
 
-    /// <summary>
-    /// Sweeps 20° increments outward from desiredDir, alternating left/right.
-    /// Returns Vector3.zero if completely surrounded.
-    /// </summary>
     private Vector3 SweepForFreeDirection(Vector3 desiredDir, Vector3 origin, float castRadius, float castDist)
     {
         int[] angles = { 20, 40, 60, 80, 100, 120, 140, 160 };

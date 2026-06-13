@@ -20,10 +20,18 @@ public class PreAttackState : IEnemyState
         // 🔥 this triggers idle
         enemy.anim.SetLocomotion(false);
         enemy.anim.PlayIdle();
+
+        Debug.Log("PreAttackState: Entered, timer set to " + timer);
     }
 
     public void Tick()
     {
+        if (enemy.isHit)
+        {
+            enemy.SwitchState(new DamageState(enemy));
+            return;
+        }
+
         timer -= Time.deltaTime;
 
         enemy.motor.LookAtTarget(enemy.player.position);
