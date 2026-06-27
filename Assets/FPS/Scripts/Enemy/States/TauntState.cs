@@ -6,6 +6,8 @@ public class TauntState : IEnemyState
     private float timer;
     private const float TAUNT_DURATION = 2.2f;
 
+    private bool continuingAttack = false;
+
     public TauntState(EnemyStateMachine enemy) { this.enemy = enemy; }
 
     public void Enter()
@@ -17,12 +19,14 @@ public class TauntState : IEnemyState
         enemy.anim.PlayTaunt(randTaunt);
 
         timer = TAUNT_DURATION;
+        continuingAttack = false;
     }
 
     public void Tick()
     {
         if (enemy.isHit)
         {
+         
             enemy.SwitchState(new DamageState(enemy));
             return;
         }
@@ -33,11 +37,16 @@ public class TauntState : IEnemyState
 
         if (timer <= 0f)
         {
-            // After taunt, go straight to attack if still in range
+
             if (enemy.DistanceToPlayer() <= enemy.attackRange && enemy.group.CanAttack(enemy))
+            {
+                continuingAttack = true;
                 enemy.SwitchState(new PreAttackState(enemy));
+            }
             else
+            {
                 enemy.SwitchState(new ChaseState(enemy));
+            }
         }
 
     }
@@ -45,5 +54,8 @@ public class TauntState : IEnemyState
     public void Exit()
     {
         enemy.anim.SetLocomotion(true);
+
+        if (!continuingAttack)
+            enemy.group.ReleaseAttackSlot(enemy);
     }
 }

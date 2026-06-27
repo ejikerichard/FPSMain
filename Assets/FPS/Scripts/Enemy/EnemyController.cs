@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using RunPunch;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -54,7 +55,7 @@ namespace FPS
 
         bool hasAggro;
         float aggroTimer;
-        float aggroDuration = 5f; // how long enemy remembers player
+        float aggroDuration = 5f;
 
         bool actionLocked;
 
@@ -70,8 +71,6 @@ namespace FPS
         float angleThreshold;
         float fieldOfViewAngle = 45.0f;
 
-        /* ================= INIT ================= */
-
         void Start()
         {
             if (!player)
@@ -86,7 +85,6 @@ namespace FPS
             PickChaseMode();
         }
 
-        /* ================= UPDATE ================= */
 
         void Update(){
             if (!player || currentState == EnemyState.Dead) return;
@@ -172,8 +170,6 @@ namespace FPS
             }
         }
 
-        /* ================= CHASE ================= */
-
         void UpdateChaseDecision()
         {
             chaseTimer -= Time.deltaTime;
@@ -210,7 +206,7 @@ namespace FPS
                 moveDir = side * strafeDir;
             }
 
-            float speed = runSpeed; // CHASING = RUN
+            float speed = runSpeed; 
 
             Vector3 move = moveDir * speed * Time.fixedDeltaTime;
 
@@ -224,7 +220,6 @@ namespace FPS
             UpdateAnimations(Vector3.zero);
         }
 
-        /* ================= ROTATION ================= */
 
         void RotateToPlayer()
         {
@@ -241,7 +236,6 @@ namespace FPS
                 rotationSpeed * Time.deltaTime);
         }
 
-        /* ================= SLOT SYSTEM ================= */
 
         void AssignOrbitSlot()
         {
@@ -295,7 +289,6 @@ namespace FPS
             return player.position + offset;
         }
 
-        /* ================= COMBAT ================= */
 
         void CombatLogic()
         {
@@ -327,8 +320,6 @@ namespace FPS
                 return;
             }
         }
-
-        /* ================= ATTACK ================= */
 
         void Attack()
         {
@@ -386,7 +377,6 @@ namespace FPS
             }
         }
 
-        /* ================= DASH ================= */
 
         void Dash()
         {
@@ -422,8 +412,6 @@ namespace FPS
             actionLocked = false;
         }
 
-        /* ================= ANIMATION ================= */
-
         void UpdateAnimations(Vector3 moveDir)
         {
             if (!animator) return;
@@ -432,7 +420,6 @@ namespace FPS
 
             Vector3 local = transform.InverseTransformDirection(moveDir);
 
-            // 🔥 THIS IS THE FIX
             float animationMultiplier = currentState == EnemyState.Chase ? 2f : 1f;
 
             animator.SetFloat("MoveX", local.x * animationMultiplier, 0.15f, Time.deltaTime);
@@ -441,7 +428,6 @@ namespace FPS
             animator.SetBool("BearRun", moveDir.sqrMagnitude > 0.0001f);
         }
 
-        /* ================= DAMAGE ================= */
 
         public void TakeDamage(float damage)
         {
@@ -460,7 +446,8 @@ namespace FPS
         {
             currentState = EnemyState.Dead;
 
-            animator.SetTrigger("Die");
+            //animator.SetTrigger("Die");
+
 
             rb.linearVelocity = Vector3.zero;
 

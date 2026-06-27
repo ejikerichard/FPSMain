@@ -71,6 +71,7 @@ public class EnemyMotor : MonoBehaviour
 
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
+        LastMoveInput = Vector3.zero;
 
         var animSync = GetComponent<EnemyAnimatorSync>();
         if (animSync != null)
@@ -80,12 +81,15 @@ public class EnemyMotor : MonoBehaviour
         }
     }
 
+    private Vector3 dashVelocity = Vector3.zero;
+
     public void Dash(Vector3 direction, float force, float duration)
     {
         direction.y = 0;
         hasTarget = false;
         dashTimer = duration;
-        rb.linearVelocity = direction.normalized * force;
+        dashVelocity = direction.normalized * force;
+        rb.linearVelocity = dashVelocity;
     }
 
     public bool IsBlockedForward()
@@ -127,6 +131,7 @@ public class EnemyMotor : MonoBehaviour
         if (dashTimer > 0f)
         {
             dashTimer -= Time.fixedDeltaTime;
+            rb.linearVelocity = dashVelocity;   // reassert every step — otherwise linearDamping (15) kills the impulse within a few frames
             anim?.UpdateMovement(transform.InverseTransformDirection(rb.linearVelocity), player);
             return;
         }
@@ -201,24 +206,46 @@ public class EnemyMotor : MonoBehaviour
         float castRadius = 0.3f;
         float castDist = blockCheckDistance;
 
-        bool desiredBlocked = Physics.SphereCast(origin, castRadius, desiredDir, out _, castDist, enemyLayer);
+        // While we're still holding a committed steer, don't even check the
+        // raw desired direction yet. Checking it every frame (as before) and
+        // reverting the instant it reads "clear" caused visible direction
+        // flicker whenever the blocking ally was also moving — the cast
+        // result oscillates true/false frame to frame as both colliders
+        // shift, so the output direction snapped back and forth with it.
+        // Holding the commitment for its full duration removes that flicker.
+        if (steerHoldTimer > 0f && committedSteerDir.sqrMagnitude > 0.01f)
+        {
+            bool committedBlocked = Physics.SphereCast(origin, castRadius, committedSteerDir, out _, castDist, enemyLayer);
+            if (!committedBlocked)
+                return committedSteerDir;
+
+            // The committed direction itself just became blocked (e.g. the
+            // gap closed) — fall through and re-sweep immediately rather
+            // than walking into a wall for the rest of the hold.
+        }
+
+        bool desiredBlocked = Physics.SphereCast(origin, castRadius, desiredDir, out RaycastHit hit, castDist, enemyLayer);
 
         if (!desiredBlocked)
         {
-     
             committedSteerDir = Vector3.zero;
             steerHoldTimer = 0f;
             return desiredDir;
         }
 
-        
-        if (steerHoldTimer > 0f && committedSteerDir.sqrMagnitude > 0.01f)
+        // Two agents blocking each other and both independently swerving at
+        // the same time is what produces an oscillation rather than a single
+        // resolved detour — each one's reroute changes what the other sees as
+        // blocked, which changes its reroute, back and forth. Break that
+        // symmetry with a stable tie-break: only the lower-priority agent
+        // swerves. The higher-priority one holds still, so the swerving
+        // agent is routing around a momentarily static obstacle instead of
+        // one that's also actively dodging it back.
+        if (hit.collider != null && GetInstanceID() < hit.collider.GetInstanceID())
         {
- 
-            bool committedBlocked = Physics.SphereCast(origin, castRadius, committedSteerDir, out _, castDist, enemyLayer);
-            if (!committedBlocked)
-                return committedSteerDir; 
-
+            committedSteerDir = Vector3.zero;
+            steerHoldTimer = 0f;
+            return Vector3.zero;
         }
 
         Vector3 freeDir = SweepForFreeDirection(desiredDir, origin, castRadius, castDist);

@@ -28,6 +28,8 @@ public class DashForwardState : IEnemyState
             enemy.transform.rotation = Quaternion.LookRotation(dir);
         }
 
+        enemy.anim.PlayDashForward();
+
         enemy.motor.Dash(dir.normalized, 10f, dashDuration);
     }
 

@@ -51,32 +51,28 @@ namespace FPS
             HandleAttackFlow();
         }
 
-        // =========================
-        // INPUT
-        // =========================
+
         void HandleInput()
         {
             if (!controller.attackPressed)
                 return;
 
-            // consume input
+
             controller.attackPressed = false;
 
-            // start first attack
+
             if(!isAttacking && attackCooldown <= 0f){
                 StartAttack();
                 return;
             }
 
-            // buffer next attack
+
             if(isAttacking){
                 attackBuffered = true;
             }
         }
 
-        // =========================
-        // ATTACK FLOW
-        // =========================
+
         void HandleAttackFlow(){
             if (!isAttacking)
                 return;
@@ -87,7 +83,6 @@ namespace FPS
 
             AnimatorStateInfo state = controller.stateInfo;
 
-            // chain attack near end
             if(state.normalizedTime >= comboBufferStart &&
                 attackBuffered &&
                 attackIndex < maxCombo){
@@ -96,15 +91,12 @@ namespace FPS
                 return;
             }
 
-            // animation finished
             if(state.normalizedTime >= 1f){
                 EndAttack();
             }
         }
 
-        // =========================
-        // START ATTACK
-        // =========================
+
         void StartAttack(){
             bool hit = PerformRaycast();
 
@@ -148,9 +140,7 @@ namespace FPS
             //}
         }
 
-        // =========================
-        // END ATTACK
-        // =========================
+
         void EndAttack(){
             isAttacking = false;
             attackBuffered = false;
@@ -168,9 +158,7 @@ namespace FPS
             controller.anim.SetInteger(noHitParam, 0);
         }
 
-        // =========================
-        // HIT CHECK
-        // =========================
+
         bool PerformRaycast(){
             return Physics.Raycast(
                     armCam.transform.position,

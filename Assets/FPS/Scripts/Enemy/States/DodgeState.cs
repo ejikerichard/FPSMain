@@ -14,10 +14,8 @@ public class DodgeState : IEnemyState
     public void Enter()
     {
         timer = duration;
+        enemy.dodged = true;
         enemy.anim.PlayDodge();
-
-      
-       // enemy.motor.MoveDirection(enemy.GetMoveDirection());
     }
 
     public void Tick()
@@ -31,5 +29,10 @@ public class DodgeState : IEnemyState
         enemy.motor.LookAtTarget(enemy.player.position, 0.3f);
     }
 
-    public void Exit() { }
+    public void Exit()
+    {
+
+        enemy.group.ReleaseAttackSlot(enemy);
+        enemy.dodged = false;
+    }
 }

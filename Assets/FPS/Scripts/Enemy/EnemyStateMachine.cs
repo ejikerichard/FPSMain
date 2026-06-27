@@ -1,6 +1,7 @@
-using UnityEngine;
-using System.Collections.Generic;
+using RunPunch;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class EnemyStateMachine : MonoBehaviour
 {
@@ -34,6 +35,9 @@ public class EnemyStateMachine : MonoBehaviour
     private Vector3 currentMoveDir;
 
     private float currentHealth = 100f;
+
+    [SerializeField] public float dashForce = 8f;
+    public bool dodged = false;
 
     public bool isHit = false;
 
@@ -109,8 +113,7 @@ public class EnemyStateMachine : MonoBehaviour
         currentMoveDir = dir.normalized;
     }
 
-    public Vector3 GetMoveDirection()
-    {
+    public Vector3 GetMoveDirection(){
         return currentMoveDir;
     }
 
@@ -139,26 +142,29 @@ public class EnemyStateMachine : MonoBehaviour
     }
     public void PerformRaycast()
     {
-        //Collider[] colliders = Physics.OverlapSphere(transform.position + transform.forward, 3f, hitLayer);
-        //foreach (Collider col in colliders)
-        //{
-        //    col.GetComponent<HealthControl>().TakeDamage(damageAmount);
+        Collider[] colliders = Physics.OverlapSphere(transform.position + transform.forward, 3f, hitLayer);
+        foreach (Collider col in colliders)
+        {
+            col.GetComponent<HealthControl>().TakeDamage(damageAmount);
 
-        //    //Vector3 directionPlayer = (col.transform.position - transform.position).normalized;
-        //    //float dotProduct = Vector3.Dot(transform.forward, directionPlayer);
-        //    //if (dotProduct > angleThreshold)
-        //    //{
-        //    //    Vector3 pushdir = (transform.position - col.transform.position).normalized;
+            //Vector3 directionPlayer = (col.transform.position - transform.position).normalized;
+            //float dotProduct = Vector3.Dot(transform.forward, directionPlayer);
+            //if (dotProduct > angleThreshold)
+            //{
+            //    Vector3 pushdir = (transform.position - col.transform.position).normalized;
 
-        //    //    col.GetComponent<Rigidbody>().AddForce(pushdir * 10f, ForceMode.Impulse);
-        //    //}
-        //    Debug.Log("Player hit for " + damageAmount + " damage!");
-        //}
+            //    col.GetComponent<Rigidbody>().AddForce(pushdir * 10f, ForceMode.Impulse);
+            //}
+            Debug.Log("Player hit for " + damageAmount + " damage!");
+        }
     }
 
     public void TakeDamage(float amount)
     {
-        if(currentHealth <= 0f)
+        if(dodged)
+            return;
+
+        if (currentHealth <= 0f)
             return;
 
         currentHealth -= amount;
@@ -166,7 +172,15 @@ public class EnemyStateMachine : MonoBehaviour
         Debug.Log("Enemy took " + amount + " damage! Current health: " + currentHealth);
         if (currentHealth <= 0f)
         {
-           // Die();
+           Die();
         }
+    }
+    void Die()
+    {
+        Debug.Log("Enemy died!");
+
+        transform.GetChild(0).GetComponent<RagdollEnable>().EnableRagdoll();
+
+        Destroy(gameObject, 3f);
     }
 }

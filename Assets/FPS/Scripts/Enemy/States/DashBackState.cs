@@ -20,16 +20,17 @@ public class DashBackState : IEnemyState
         timer = dashDuration;
         dashFinished = false;
 
+        enemy.dodged = true;
+
         enemy.anim.PlayDashBack();
 
         Vector3 back = -enemy.transform.forward;
-        enemy.motor.Dash(back, 8f, dashDuration);
+        enemy.motor.Dash(back, enemy.dashForce, dashDuration);
     }
 
     public void Tick()
     {
-        if (enemy.isHit)
-        {
+        if(enemy.isHit){
             enemy.SwitchState(new DamageState(enemy));
             return;
         }
@@ -58,7 +59,10 @@ public class DashBackState : IEnemyState
         }
     }
 
-    public void Exit() {
+    public void Exit()
+    {
         enemy.SetRetreatTime();
+        enemy.group.ReleaseAttackSlot(enemy);
+        enemy.dodged = false;
     }
 }

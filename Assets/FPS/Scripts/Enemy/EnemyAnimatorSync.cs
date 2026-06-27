@@ -42,7 +42,8 @@ public class EnemyAnimatorSync : MonoBehaviour
         anim.SetBool("Run", false);
     }
 
-    public void PlayAttack(){
+    public void PlayAttack()
+    {
         useRootMotion = true;
         int index;
 
@@ -55,29 +56,35 @@ public class EnemyAnimatorSync : MonoBehaviour
         lastAttack = index;
 
         anim.CrossFade(attackAnimations[index], 0.1f);
-       
+
     }
 
-    public void PlayRecover(){
+    public void PlayRecover()
+    {
         useRootMotion = true;
         anim.CrossFade("Recover", 0.1f);
     }
 
-    public void PlayDodge(){
+    public void PlayDodge()
+    {
         anim.CrossFade("Dodge", 0.1f);
     }
 
-    public void PlayDashBack(){
+    public void PlayDashBack()
+    {
         anim.CrossFade("DashBack", 0.1f);
     }
 
-    public void PlayStunned(){
+    public void PlayStunned()
+    {
         anim.CrossFade("Stunned", 0.1f);
     }
-    public void PlayDashForward(){
+    public void PlayDashForward()
+    {
         anim.CrossFade("DashFwd", 0.1f);
     }
-    public void PlayTaunt(int index){
+    public void PlayTaunt(int index)
+    {
         if (index <= 0)
             anim.CrossFade("Taunt1", 0.1f);
         else if (index == 1)
@@ -100,11 +107,14 @@ public class EnemyAnimatorSync : MonoBehaviour
             return;
         }
 
-
-        Vector3 localInput = transform.InverseTransformDirection(motor.LastMoveInput);
-
-        float moveX = localInput.x;
-        float moveY = localInput.z;
+        // Use the local-space direction the caller already computed and
+        // passed in (chase direction, dash direction, or zero on Stop)
+        // instead of re-reading motor.LastMoveInput, which goes stale during
+        // dashes (FixedUpdate's dash branch returns before updating it) and
+        // right after Stop() (which never clears it). That mismatch between
+        // animation and actual rigidbody motion is what reads as "sliding".
+        float moveX = velocity.x;
+        float moveY = velocity.z;
 
         Vector2 input = new Vector2(moveX, moveY);
         input = Vector2.ClampMagnitude(input, 1f);
@@ -112,7 +122,7 @@ public class EnemyAnimatorSync : MonoBehaviour
         anim.SetFloat("MoveX", input.x, 0.1f, Time.deltaTime);
         anim.SetFloat("MoveY", input.y, 0.1f, Time.deltaTime);
 
-        float inputMag = new Vector2(moveX, moveY).magnitude;
+        float inputMag = input.magnitude;
         anim.SetBool("Run", inputMag > 0.1f);
     }
 
