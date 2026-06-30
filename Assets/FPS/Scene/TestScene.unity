@@ -2813,11 +2813,11 @@ MonoBehaviour:
   airControl: 0.5
   targetSpeed: 0
   speedPercent: 0
-  jumpForce: 15
-  gravity: -24
+  jumpForce: 11
+  gravity: -28
   fallGravityMultiplier: 2.5
   coyoteTime: 0.12
-  jumpBufferTime: 0.12
+  jumpBufferTime: 0.1
   jumpForwardBoost: 7.9
   sprintJumpMultiplier: 1.25
   standingHeight: 2

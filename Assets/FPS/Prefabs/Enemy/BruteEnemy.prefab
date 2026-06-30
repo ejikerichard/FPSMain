@@ -2389,6 +2389,7 @@ MonoBehaviour:
   retreatCooldown: 1.5
   blockCooldown: 0.5
   dashForce: 8
+  dodged: 0
   isHit: 0
   motor: {fileID: 0}
   anim: {fileID: 0}
@@ -2405,7 +2406,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993a3e3c2ad053c418b20080cd450a67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMotor
-  moveSpeed: 5
+  moveSpeed: 9
   rotationSpeed: 10
   player: {fileID: 0}
   blockCheckDistance: 1.2
