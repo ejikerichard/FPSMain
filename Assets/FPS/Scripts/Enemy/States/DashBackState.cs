@@ -55,7 +55,11 @@ public class DashBackState : IEnemyState
 
         if (dashFinished && timer <= 0f)
         {
-            enemy.SwitchState(new DashForwardState(enemy));
+             float r = Random.value;
+            if (r < 0.25f)
+                enemy.SwitchState(new DashForwardState(enemy));
+            else if (r < 0.5f)
+                enemy.SwitchState(new TauntState(enemy));
         }
     }
 

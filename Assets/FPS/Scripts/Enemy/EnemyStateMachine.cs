@@ -1,4 +1,3 @@
-using RunPunch;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -67,7 +66,10 @@ public class EnemyStateMachine : MonoBehaviour
     {
         currentState?.Tick();
     }
-
+    void FixedUpdate()
+    {
+        IgnoreCollider();
+    }
     public void SwitchState(IEnemyState newState)
     {
         currentState?.Exit();
@@ -175,12 +177,22 @@ public class EnemyStateMachine : MonoBehaviour
            Die();
         }
     }
-    void Die()
-    {
+    void Die(){
         Debug.Log("Enemy died!");
 
-        transform.GetChild(0).GetComponent<RagdollEnable>().EnableRagdoll();
+       transform.GetChild(0).GetComponent<RagdollEnable>().EnableRagdoll();
+        GetComponent<CapsuleCollider>().enabled = false;
 
-        Destroy(gameObject, 3f);
+        Destroy(gameObject, 8f);
+    }
+
+    void IgnoreCollider(){
+       if(this.currentHealth <= 0f)
+        {
+            Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Enemies"), LayerMask.NameToLayer("Player"), true);
+            Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Enemies"), LayerMask.NameToLayer("Enemies"), true);
+
+            Debug.Log("Ignoring collisions between Enemies and Player, and Enemies and Enemies."); 
+        }
     }
 }

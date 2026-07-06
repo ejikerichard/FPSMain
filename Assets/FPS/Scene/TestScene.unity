@@ -2043,16 +2043,32 @@ MonoBehaviour:
   attackCooldown: 2
   dashCooldown: 3
   lungeSpeed: 7
+  damageAmount: 10
   hitLayers:
-    serializedVersion: 2
     m_Bits: 8
   raycastDistance: 0.5
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
+  currentHealth: 0
   circleRadius: 3.5
   enemyMask:
-    serializedVersion: 2
     m_Bits: 128
+  currentState: 0
+  orbitSlot: 0
+  combatSlotPosition: {x: 0, y: 0, z: 0}
+  hasAggro: 0
+  aggroTimer: 0
+  aggroDuration: 5
+  actionLocked: 0
+  decisionTimer: 0
+  lastAttackTime: 0
+  lastDashTime: 0
+  chaseTimer: 0
+  strafeMode: 0
+  strafeDir: 0
+  angleThreshold: 0
+  fieldOfViewAngle: 45
 --- !u!136 &217392968
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4432,16 +4448,32 @@ MonoBehaviour:
   attackCooldown: 2
   dashCooldown: 3
   lungeSpeed: 7
+  damageAmount: 10
   hitLayers:
-    serializedVersion: 2
     m_Bits: 8
   raycastDistance: 0.5
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
+  currentHealth: 0
   circleRadius: 3.5
   enemyMask:
-    serializedVersion: 2
     m_Bits: 128
+  currentState: 0
+  orbitSlot: 0
+  combatSlotPosition: {x: 0, y: 0, z: 0}
+  hasAggro: 0
+  aggroTimer: 0
+  aggroDuration: 5
+  actionLocked: 0
+  decisionTimer: 0
+  lastAttackTime: 0
+  lastDashTime: 0
+  chaseTimer: 0
+  strafeMode: 0
+  strafeDir: 0
+  angleThreshold: 0
+  fieldOfViewAngle: 45
 --- !u!136 &449616336
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -9539,16 +9571,32 @@ MonoBehaviour:
   attackCooldown: 2
   dashCooldown: 3
   lungeSpeed: 7
+  damageAmount: 10
   hitLayers:
-    serializedVersion: 2
     m_Bits: 8
   raycastDistance: 0.5
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
+  currentHealth: 0
   circleRadius: 3.5
   enemyMask:
-    serializedVersion: 2
     m_Bits: 128
+  currentState: 0
+  orbitSlot: 0
+  combatSlotPosition: {x: 0, y: 0, z: 0}
+  hasAggro: 0
+  aggroTimer: 0
+  aggroDuration: 5
+  actionLocked: 0
+  decisionTimer: 0
+  lastAttackTime: 0
+  lastDashTime: 0
+  chaseTimer: 0
+  strafeMode: 0
+  strafeDir: 0
+  angleThreshold: 0
+  fieldOfViewAngle: 45
 --- !u!136 &957195859
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -18393,16 +18441,32 @@ MonoBehaviour:
   attackCooldown: 2
   dashCooldown: 3
   lungeSpeed: 7
+  damageAmount: 10
   hitLayers:
-    serializedVersion: 2
     m_Bits: 8
   raycastDistance: 0.5
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
+  currentHealth: 0
   circleRadius: 3.5
   enemyMask:
-    serializedVersion: 2
     m_Bits: 128
+  currentState: 0
+  orbitSlot: 0
+  combatSlotPosition: {x: 0, y: 0, z: 0}
+  hasAggro: 0
+  aggroTimer: 0
+  aggroDuration: 5
+  actionLocked: 0
+  decisionTimer: 0
+  lastAttackTime: 0
+  lastDashTime: 0
+  chaseTimer: 0
+  strafeMode: 0
+  strafeDir: 0
+  angleThreshold: 0
+  fieldOfViewAngle: 45
 --- !u!54 &2081390297
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18886,16 +18950,32 @@ MonoBehaviour:
   attackCooldown: 2
   dashCooldown: 3
   lungeSpeed: 7
+  damageAmount: 10
   hitLayers:
-    serializedVersion: 2
     m_Bits: 8
   raycastDistance: 0.5
   dashForce: 10
   dashDuration: 0.25
+  maxHealth: 100
+  currentHealth: 0
   circleRadius: 3.5
   enemyMask:
-    serializedVersion: 2
     m_Bits: 128
+  currentState: 0
+  orbitSlot: 0
+  combatSlotPosition: {x: 0, y: 0, z: 0}
+  hasAggro: 0
+  aggroTimer: 0
+  aggroDuration: 5
+  actionLocked: 0
+  decisionTimer: 0
+  lastAttackTime: 0
+  lastDashTime: 0
+  chaseTimer: 0
+  strafeMode: 0
+  strafeDir: 0
+  angleThreshold: 0
+  fieldOfViewAngle: 45
 --- !u!136 &2124047999
 CapsuleCollider:
   m_ObjectHideFlags: 0

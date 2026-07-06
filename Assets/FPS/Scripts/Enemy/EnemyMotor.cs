@@ -76,7 +76,7 @@ public class EnemyMotor : MonoBehaviour
         var animSync = GetComponent<EnemyAnimatorSync>();
         if (animSync != null)
         {
-            animSync.useRootMotion = false;  // ← kills OnAnimatorMove sliding
+            animSync.useRootMotion = false; 
             animSync.UpdateMovement(Vector3.zero, player);
         }
     }
@@ -131,7 +131,7 @@ public class EnemyMotor : MonoBehaviour
         if (dashTimer > 0f)
         {
             dashTimer -= Time.fixedDeltaTime;
-            rb.linearVelocity = dashVelocity;   // reassert every step — otherwise linearDamping (15) kills the impulse within a few frames
+            rb.linearVelocity = dashVelocity; 
             anim?.UpdateMovement(transform.InverseTransformDirection(rb.linearVelocity), player);
             return;
         }
@@ -141,7 +141,7 @@ public class EnemyMotor : MonoBehaviour
 
         if (hasMoveRequest)
         {
-            noRequestTimer = 0f; // reset timeout on any request
+            noRequestTimer = 0f;
 
             if (explicitStopRequested)
             {
@@ -159,32 +159,29 @@ public class EnemyMotor : MonoBehaviour
         }
         else
         {
-            // No request this frame — count up
             noRequestTimer += Time.fixedDeltaTime;
 
-            // If no state has called MoveDirection for 2+ physics frames,
-            // the state machine is idle/transitioning — stop rather than slide
             if (noRequestTimer >= NO_REQUEST_TIMEOUT)
             {
                 lastResolvedDir = Vector3.zero;
                 committedSteerDir = Vector3.zero;
             }
         }
-        // No hasMoveRequest → lastResolvedDir unchanged, enemy keeps moving
+
 
         LastMoveInput = lastResolvedDir;
 
-        // Replace the stop block:
+  
         if (lastResolvedDir.sqrMagnitude < 0.01f)
         {
-            rb.linearVelocity = Vector3.zero;   // hard zero, not just xz
+            rb.linearVelocity = Vector3.zero;  
             rb.angularVelocity = Vector3.zero;
             anim?.UpdateMovement(Vector3.zero, player);
             return;
         }
 
         Vector3 velocity = lastResolvedDir * moveSpeed;
-        velocity.y = 0f;  // don't preserve y — let gravity work through drag, not manual y copy
+        velocity.y = 0f;  
         rb.linearVelocity = velocity;
 
         if (lastResolvedDir.sqrMagnitude > 0.01f)
@@ -206,22 +203,13 @@ public class EnemyMotor : MonoBehaviour
         float castRadius = 0.3f;
         float castDist = blockCheckDistance;
 
-        // While we're still holding a committed steer, don't even check the
-        // raw desired direction yet. Checking it every frame (as before) and
-        // reverting the instant it reads "clear" caused visible direction
-        // flicker whenever the blocking ally was also moving — the cast
-        // result oscillates true/false frame to frame as both colliders
-        // shift, so the output direction snapped back and forth with it.
-        // Holding the commitment for its full duration removes that flicker.
         if (steerHoldTimer > 0f && committedSteerDir.sqrMagnitude > 0.01f)
         {
             bool committedBlocked = Physics.SphereCast(origin, castRadius, committedSteerDir, out _, castDist, enemyLayer);
             if (!committedBlocked)
                 return committedSteerDir;
 
-            // The committed direction itself just became blocked (e.g. the
-            // gap closed) — fall through and re-sweep immediately rather
-            // than walking into a wall for the rest of the hold.
+
         }
 
         bool desiredBlocked = Physics.SphereCast(origin, castRadius, desiredDir, out RaycastHit hit, castDist, enemyLayer);
@@ -233,14 +221,7 @@ public class EnemyMotor : MonoBehaviour
             return desiredDir;
         }
 
-        // Two agents blocking each other and both independently swerving at
-        // the same time is what produces an oscillation rather than a single
-        // resolved detour — each one's reroute changes what the other sees as
-        // blocked, which changes its reroute, back and forth. Break that
-        // symmetry with a stable tie-break: only the lower-priority agent
-        // swerves. The higher-priority one holds still, so the swerving
-        // agent is routing around a momentarily static obstacle instead of
-        // one that's also actively dodging it back.
+
         if (hit.collider != null && GetInstanceID() < hit.collider.GetInstanceID())
         {
             committedSteerDir = Vector3.zero;
@@ -271,13 +252,10 @@ public class EnemyMotor : MonoBehaviour
                 return leftDir;
         }
 
-        return Vector3.zero; // Fully surrounded — stop
+        return Vector3.zero;
     }
 
-    /// <summary>
-    /// Returns a small velocity nudge that pushes this enemy away from nearby allies.
-    /// Strength falls off with distance and is capped so it never causes jitter.
-    /// </summary>
+
     private Vector3 ComputeSeparation()
     {
         Vector3 push = Vector3.zero;
@@ -292,12 +270,10 @@ public class EnemyMotor : MonoBehaviour
             float dist = away.magnitude;
             if (dist < 0.01f) continue;
 
-            // Linear falloff: full push at 0, zero push at separationRadius
             float t = 1f - (dist / separationRadius);
             push += away.normalized * (t * separationStrength);
         }
 
-        // Cap so separation never exceeds half moveSpeed — prevents overpowering movement
         float maxSep = moveSpeed * 0.5f;
         if (push.magnitude > maxSep)
             push = push.normalized * maxSep;
