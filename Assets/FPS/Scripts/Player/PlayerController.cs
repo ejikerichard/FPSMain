@@ -19,8 +19,8 @@ namespace FPS
 
         [Header("References")]
         public Camera playerCamera;
-        public Transform orientation; // optional, use camera.forward-based movement
-        public PlayerInput playerInput; // assign your InputAction asset (or added automatically)
+        public Transform orientation; 
+        public PlayerInput playerInput; 
         public AudioSource footstepSource;
         public AudioClip footstepClips;
         private WeaponInventory weaponInventory;
@@ -40,7 +40,7 @@ namespace FPS
         [Header("Jump & Gravity")]
         public float jumpForce = 7f;
         public float gravity = -24f;
-        public float fallGravityMultiplier = 2.5f; // stronger gravity when falling
+        public float fallGravityMultiplier = 2.5f; 
         public float coyoteTime = 0.12f;
         public float jumpBufferTime = 0.12f;
         public float jumpForwardBoost = 3.5f;
@@ -55,8 +55,8 @@ namespace FPS
         public float slideFriction = 8f;
 
         [Header("Vaulting")]
-        public float vaultMaxHeight = 1.1f;    // max obstacle height to vault over
-        public float vaultMaxDistance = 1.0f;  // how far ahead to check
+        public float vaultMaxHeight = 1.1f;   
+        public float vaultMaxDistance = 1.0f;  
         public float vaultSpeed = 5f;
 
         [Header("Head/Weapon Bob & Recoil")]
@@ -67,8 +67,8 @@ namespace FPS
         public float recoilReturnSpeed = 6f;
 
         [Header("Stamina")]
-        public float maxStamina = 5f;        // seconds of sprint
-        public float staminaDrainRate = 1f;  // per second while sprinting
+        public float maxStamina = 5f;       
+        public float staminaDrainRate = 1f;  
         public float staminaRecoverRate = 0.8f;
         public float staminaRecoverDelay = 1.0f;
 

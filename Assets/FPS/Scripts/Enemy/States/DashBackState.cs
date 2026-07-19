@@ -30,7 +30,9 @@ public class DashBackState : IEnemyState
 
     public void Tick()
     {
-        if(enemy.isHit){
+        if (enemy.player.GetComponent<HealthControl>().IsDead) return;
+
+        if (enemy.isHit){
             enemy.SwitchState(new DamageState(enemy));
             return;
         }

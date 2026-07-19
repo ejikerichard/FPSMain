@@ -22,6 +22,8 @@ public class DamageState : IEnemyState
 
     public void Tick()
     {
+        if (enemy.player.GetComponent<HealthControl>().IsDead) return;
+
         if (enemy.anim.IsAnimationFinished())
         {
             enemy.SwitchState(new IdleState(enemy));

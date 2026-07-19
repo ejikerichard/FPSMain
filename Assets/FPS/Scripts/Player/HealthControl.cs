@@ -1,6 +1,7 @@
+using FPS;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class HealthControl : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class HealthControl : MonoBehaviour
     [SerializeField] CanvasGroup redSplatter = null;
 
     [SerializeField] float hurtTimer;
+
+    public bool IsDead = false;
 
 
     void Start()
@@ -33,10 +36,13 @@ public class HealthControl : MonoBehaviour
         if (currentHealth > 0)
             currentHealth -= damage;
         else 
-            if(currentHealth <= 0)
-            currentHealth = 0;
+            if(currentHealth <= 0){
+                currentHealth = 0;
+                Dead();
+            }
 
         UpdateHealth();
+        CameraWobble.Instance.Shake(2.5f);
     }
 
     void Heal(float healAmount)
@@ -50,5 +56,14 @@ public class HealthControl : MonoBehaviour
             if(redSplatter.alpha < 0)
                 redSplatter.alpha = 0;
         }
+    }
+    public void Dead()
+    {
+
+        IsDead = true;
+        GetComponent<CapsuleCollider>().height = 0;
+        GetComponent<PlayerController>().enabled = false;
+        GetComponent<PlayerAttack>().enabled = false;
+        Debug.Log("Player is dead");
     }
 }

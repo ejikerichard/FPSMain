@@ -1,3 +1,4 @@
+using FPS;
 using UnityEngine;
 
 public class ChaseState : IEnemyState
@@ -26,6 +27,8 @@ public class ChaseState : IEnemyState
 
     public void Tick()
     {
+        if(enemy.player.GetComponent<HealthControl>().IsDead ) return;
+
         if (enemy.isHit)
         {
             enemy.SwitchState(new DamageState(enemy));

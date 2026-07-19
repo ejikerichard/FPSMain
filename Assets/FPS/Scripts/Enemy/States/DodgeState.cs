@@ -20,6 +20,8 @@ public class DodgeState : IEnemyState
 
     public void Tick()
     {
+        if (enemy.player.GetComponent<HealthControl>().IsDead) return;
+
         timer -= Time.deltaTime;
 
         if (timer <= 0f)

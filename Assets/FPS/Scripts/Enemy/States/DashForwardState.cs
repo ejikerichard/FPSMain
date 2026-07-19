@@ -35,6 +35,14 @@ public class DashForwardState : IEnemyState
 
     public void Tick()
     {
+        if (enemy.player.GetComponent<HealthControl>().IsDead) return;
+
+        if (enemy.isHit)
+        {
+            enemy.SwitchState(new DamageState(enemy));
+            return;
+        }
+
         enemy.motor.LookAtTarget(enemy.player.position, 2f);
 
         timer -= Time.deltaTime;

@@ -24,6 +24,8 @@ public class TauntState : IEnemyState
 
     public void Tick()
     {
+        if (enemy.player.GetComponent<HealthControl>().IsDead) return;
+
         if (enemy.isHit)
         {
          

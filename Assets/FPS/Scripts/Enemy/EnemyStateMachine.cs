@@ -150,7 +150,6 @@ public class EnemyStateMachine : MonoBehaviour
         {
             col.GetComponent<HealthControl>().TakeDamage(damageAmount);
 
-
             Debug.Log("Player hit for " + damageAmount + " damage!");
         }
     }
