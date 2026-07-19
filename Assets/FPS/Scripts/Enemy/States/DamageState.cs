@@ -4,7 +4,7 @@ public class DamageState : IEnemyState
 {
     private EnemyStateMachine enemy;
 
-    public DamageState(EnemyStateMachine enemy){ this.enemy = enemy; }
+    public DamageState(EnemyStateMachine enemy) { this.enemy = enemy; }
 
     public void Enter()
     {
@@ -22,9 +22,17 @@ public class DamageState : IEnemyState
 
     public void Tick()
     {
-        if(enemy.anim.IsAnimationFinished())
+        if (enemy.anim.IsAnimationFinished())
         {
             enemy.SwitchState(new IdleState(enemy));
         }
+    }
+
+
+    public void Rehit()
+    {
+        enemy.motor.Stop();
+        enemy.anim.SetLocomotion(false);
+        enemy.anim.PlayDamage();
     }
 }

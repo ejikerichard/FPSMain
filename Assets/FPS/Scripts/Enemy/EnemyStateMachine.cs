@@ -115,7 +115,8 @@ public class EnemyStateMachine : MonoBehaviour
         currentMoveDir = dir.normalized;
     }
 
-    public Vector3 GetMoveDirection(){
+    public Vector3 GetMoveDirection()
+    {
         return currentMoveDir;
     }
 
@@ -149,21 +150,14 @@ public class EnemyStateMachine : MonoBehaviour
         {
             col.GetComponent<HealthControl>().TakeDamage(damageAmount);
 
-            //Vector3 directionPlayer = (col.transform.position - transform.position).normalized;
-            //float dotProduct = Vector3.Dot(transform.forward, directionPlayer);
-            //if (dotProduct > angleThreshold)
-            //{
-            //    Vector3 pushdir = (transform.position - col.transform.position).normalized;
 
-            //    col.GetComponent<Rigidbody>().AddForce(pushdir * 10f, ForceMode.Impulse);
-            //}
             Debug.Log("Player hit for " + damageAmount + " damage!");
         }
     }
 
     public void TakeDamage(float amount)
     {
-        if(dodged)
+        if (dodged)
             return;
 
         if (currentHealth <= 0f)
@@ -172,27 +166,42 @@ public class EnemyStateMachine : MonoBehaviour
         currentHealth -= amount;
         isHit = true;
         Debug.Log("Enemy took " + amount + " damage! Current health: " + currentHealth);
+
         if (currentHealth <= 0f)
         {
-           Die();
+            Die();
+            return;
+        }
+
+
+        if (currentState is DamageState dmg)
+        {
+            dmg.Rehit();
+        }
+        else
+        {
+            SwitchState(new DamageState(this));
         }
     }
-    void Die(){
+
+    void Die()
+    {
         Debug.Log("Enemy died!");
 
-       transform.GetChild(0).GetComponent<RagdollEnable>().EnableRagdoll();
+        transform.GetChild(0).GetComponent<RagdollEnable>().EnableRagdoll();
         GetComponent<CapsuleCollider>().enabled = false;
 
         Destroy(gameObject, 8f);
     }
 
-    void IgnoreCollider(){
-       if(this.currentHealth <= 0f)
+    void IgnoreCollider()
+    {
+        if (this.currentHealth <= 0f)
         {
             Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Enemies"), LayerMask.NameToLayer("Player"), true);
             Physics.IgnoreLayerCollision(LayerMask.NameToLayer("Enemies"), LayerMask.NameToLayer("Enemies"), true);
 
-            Debug.Log("Ignoring collisions between Enemies and Player, and Enemies and Enemies."); 
+            Debug.Log("Ignoring collisions between Enemies and Player, and Enemies and Enemies.");
         }
     }
 }

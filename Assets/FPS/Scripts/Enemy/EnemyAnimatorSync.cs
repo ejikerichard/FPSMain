@@ -92,9 +92,11 @@ public class EnemyAnimatorSync : MonoBehaviour
         if (index == 2)
             anim.CrossFade("Taunt3", 0.1f);
     }
+
     public void PlayDamage()
     {
-        anim.CrossFade("hitReact", 0.1f);
+  
+        anim.CrossFade("hitReact", 0.05f, 0, 0f);
     }
 
     public void UpdateMovement(Vector3 velocity, Transform target)
@@ -107,12 +109,6 @@ public class EnemyAnimatorSync : MonoBehaviour
             return;
         }
 
-        // Use the local-space direction the caller already computed and
-        // passed in (chase direction, dash direction, or zero on Stop)
-        // instead of re-reading motor.LastMoveInput, which goes stale during
-        // dashes (FixedUpdate's dash branch returns before updating it) and
-        // right after Stop() (which never clears it). That mismatch between
-        // animation and actual rigidbody motion is what reads as "sliding".
         float moveX = velocity.x;
         float moveY = velocity.z;
 
@@ -141,12 +137,11 @@ public class EnemyAnimatorSync : MonoBehaviour
     {
         if (!useRootMotion)
         {
-            // Never let the animator push velocity when we're not in a root motion state
             return;
         }
 
         Vector3 delta = anim.deltaPosition;
-        delta.y = 0f;  // don't let root motion fight gravity
+        delta.y = 0f;
         rb.linearVelocity = delta / Time.deltaTime;
     }
 }
